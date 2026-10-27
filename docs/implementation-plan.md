@@ -26,7 +26,7 @@ Tài liệu này chuyển yêu cầu trong mô tả bài toán, đặc tả API 
 
 ### 2. Xác định cấu hình và dữ liệu — Hoàn tất triển khai; chờ nghiệm thu runtime
 
-- Khai báo cấu hình qua `.env.example`: `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRE_SECONDS`, thông tin admin và ba đơn giá.
+- Khai báo cấu hình qua `.env.example`: `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRE_SECONDS` và thông tin admin; không có cấu hình giá.
 - [x] Đã thêm `business_layer/config.py` dùng Pydantic Settings; tải `.env` theo đường dẫn cố định từ thư mục dự án, hỗ trợ biến môi trường và giữ JWT key dạng `SecretStr`.
 - [x] Đã thêm `python-dotenv` vào requirements để hỗ trợ đọc `.env`.
 - Không dùng `.env` trong Git; thay secret mặc định trước khi triển khai.
@@ -52,13 +52,19 @@ Tài liệu này chuyển yêu cầu trong mô tả bài toán, đặc tả API 
 
 ### 4. Hoàn thiện nghiệp vụ thuần Python
 
-- Validate format, trường bắt buộc và từ chối trường lạ.
-- Chỉ chấp nhận `car`, `motorbike`, `bicycle`.
-- Bicycle không được có `plate`; car/motorbike bắt buộc có `plate`.
-- Chuẩn hóa biển số bằng trim khoảng trắng và uppercase trước khi lưu/so khớp.
-- Trùng ticket đang gửi xe trả `TICKET_IN_USE`; tra cứu không khớp bộ ba trả `VEHICLE_NOT_FOUND`.
-- Tính số giờ bằng làm tròn lên, tối thiểu một giờ; tính charge từ đơn giá theo loại xe.
-- DELETE phải xác nhận khớp, tính phí và xóa lượt xe; GET chỉ xem phí, không xóa.
+- [x] Validate dữ liệu bắt buộc, định dạng ticket/biển số và từ chối trường lạ bằng lỗi miền.
+- [x] Chỉ chấp nhận `car`, `motorbike`, `bicycle`.
+- [x] Bicycle không được có trường `plate`; car/motorbike bắt buộc có `plate`.
+- [x] Chuẩn hóa biển số bằng trim khoảng trắng và uppercase trước khi lưu/so khớp.
+- [x] Trùng ticket đang gửi xe trả `TICKET_IN_USE`; tra cứu không khớp bộ ba trả `VEHICLE_NOT_FOUND`.
+- [x] Gửi xe lưu ticket, loại xe, biển số hợp lệ và `time_in` UTC.
+- [x] Lấy xe xác nhận ticket/plate/type khớp, xóa lượt gửi và trả record đã lấy ra.
+- [x] GET là thao tác tra cứu chỉ đọc, trả dữ liệu lượt gửi và không làm thay đổi trạng thái.
+- [x] Không triển khai bảng giá, đơn giá, tính phí hoặc dữ liệu `charge` trong phạm vi hiện tại.
+
+Service thuần Python nằm tại `business_layer/services/parking_service.py`, nhận `VehicleRepositoryPort` qua constructor và không phụ thuộc FastAPI/SQLAlchemy. `BusinessError.code` cung cấp mã lỗi miền để API ánh xạ ở bước 6.
+
+**Nghiệm thu:** `pytest tests/test_business_rules.py -q`: 18 passed; toàn bộ suite khả dụng trong môi trường hiện tại: 28 passed, 1 deselected (`test_health`, từng treo trong lần chạy trước do asyncio Windows). `git diff --check` không báo lỗi whitespace.
 
 **Nghiệm thu:** service test được độc lập với framework web và DB; các luật BR-01 đến BR-10 được ánh xạ thành kết quả/lỗi miền rõ ràng.
 
@@ -76,8 +82,8 @@ Tài liệu này chuyển yêu cầu trong mô tả bài toán, đặc tả API 
 
 - `POST /api/v1/auth/login`: nhận username/password; trả access token.
 - `POST /api/v1/parking/entries`: ghi nhận xe; thành công trả 204 không body.
-- `GET /api/v1/parking/entries/{ticket}`: yêu cầu query `type`, và `plate` theo loại xe; trả thông tin xe, `time_in`, `charge`; không xóa xe.
-- `DELETE /api/v1/parking/entries/{ticket}`: xác nhận bộ ba, tính phí và xóa xe; trả ticket và charge.
+- `GET /api/v1/parking/entries/{ticket}`: yêu cầu query `type`, và `plate` theo loại xe; trả ticket, plate, type, `time_in`; không tính phí hoặc xóa xe.
+- `DELETE /api/v1/parking/entries/{ticket}`: xác nhận bộ ba và xóa lượt xe; trả `204 No Content`, không có dữ liệu phí.
 - `GET /api/v1/parking/entries`: hỗ trợ danh sách phân trang nếu triển khai endpoint tùy chọn trong đặc tả.
 - `GET /health`: kiểm tra tình trạng service.
 - Dùng JSON nhất quán cho lỗi: `INVALID_FORMAT`, `INVALID_TYPE`, `INVALID_CREDENTIALS`, `UNAUTHORIZED`, `VEHICLE_NOT_FOUND`, `TICKET_IN_USE`, `PLATE_NOT_ALLOWED`, `PLATE_REQUIRED`.
@@ -89,9 +95,9 @@ Tài liệu này chuyển yêu cầu trong mô tả bài toán, đặc tả API 
 ### 7. Đồng bộ kiểm thử chức năng và thứ tự lỗi
 
 - Import của test khói đã trỏ đến `business_layer.main`; tiếp tục xác nhận health endpoint khi chạy suite.
-- Bổ sung/hoàn thiện unit test nghiệp vụ, repository test với SQLite tạm và integration test API.
+- Bổ sung/hoàn thiện unit test nghiệp vụ, repository test với SQLite tạm và integration test API; không kiểm thử tính phí.
 - Kiểm chứng pipeline: auth → format → type → luật biển số → tồn tại.
-- Bao phủ các kịch bản T01–T14: auth, format, type, biển số, gửi xe, ticket trùng, GET đúng/sai, thiếu query, DELETE, login sai và race condition.
+- Bao phủ auth, format, type, biển số, gửi xe, ticket trùng, GET tra cứu đúng/sai, DELETE thành công và race condition; các response không có `charge`.
 - Kiểm tra sau DELETE, GET cùng vé phải trả 404; GET trước DELETE không làm mất dữ liệu.
 - Kiểm tra kiến trúc: service không import web framework hoặc thư viện DB.
 
@@ -110,7 +116,7 @@ Tài liệu này chuyển yêu cầu trong mô tả bài toán, đặc tả API 
 
 ### 9. Hoàn thiện Gate client và load test Kaggle
 
-- Gate client mô phỏng login, gửi xe, tra cứu, lấy xe và hiển thị phản hồi cho nhân viên.
+- Gate client mô phỏng login, gửi xe, tra cứu trạng thái và lấy xe; không hiển thị bảng giá hoặc phí.
 - Hoàn thiện `loadtest/locustfile.py` theo luồng xác thực và nghiệp vụ; không để benchmark làm sai lệch dữ liệu hoặc dùng ticket cố định gây xung đột.
 - Hoàn thiện runner Kaggle CPU, ghi lại cấu hình phần cứng, thời lượng, concurrency, throughput, latency và lỗi.
 - Chạy benchmark baseline trên một cấu hình Kaggle CPU cố định theo yêu cầu đề bài; lưu hướng dẫn và kết quả trong `docs/`.

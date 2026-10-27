@@ -1,6 +1,6 @@
 # Parking Management — Pha 1
 
-Backend quản lý bãi đỗ xe theo yêu cầu Pha 1: ghi nhận xe vào, tra cứu phí, lấy xe ra, xác thực JWT và lưu trạng thái qua tầng Repository. Project chọn SQLite làm hệ quản trị cơ sở dữ liệu, chạy bằng file local để hỗ trợ vận hành offline.
+Backend quản lý bãi đỗ xe theo yêu cầu Pha 1: ghi nhận xe vào, tra cứu lượt xe đang gửi, lấy xe ra, xác thực JWT và lưu trạng thái qua tầng Repository. Phạm vi hiện tại không bao gồm bảng giá hoặc tính phí. Project chọn SQLite làm hệ quản trị cơ sở dữ liệu, chạy bằng file local để hỗ trợ vận hành offline.
 
 ## Trạng thái hiện tại
 
@@ -62,12 +62,9 @@ Chỉnh `.env` theo môi trường triển khai. Thay `JWT_SECRET` bằng khóa 
 | Biến | Ý nghĩa | Mặc định mẫu |
 |---|---|---|
 | `DATABASE_URL` | Đường dẫn file SQLite local | `sqlite:///./parking.db` |
-| `JWT_SECRET` | Khóa ký JWT; cần thay bằng giá trị riêng | `doi-gia-tri-nay` |
+| `JWT_SECRET` | Khóa ký JWT; cần thay bằng giá trị riêng | `replace-with-a-random-secret-before-deployment` |
 | `JWT_EXPIRE_SECONDS` | Thời hạn token (giây) | `3600` |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Tài khoản khởi tạo | `gatekeeper` / `secret123` |
-| `RATE_CAR` | Giá ô tô (đồng/giờ) | `10000` |
-| `RATE_MOTORBIKE` | Giá xe máy (đồng/giờ) | `3000` |
-| `RATE_BICYCLE` | Giá xe đạp (đồng/giờ) | `1000` |
 
 ## Chạy hệ thống
 
@@ -78,11 +75,11 @@ Sau khi cài dependencies và tạo `.env`, có thể khởi chạy phần boots
 - REST API JSON, base path `/api/v1`.
 - `POST /api/v1/auth/login` cấp JWT.
 - `POST /api/v1/parking/entries` ghi nhận xe (yêu cầu xác thực).
-- `GET /api/v1/parking/entries/{ticket}` tra cứu và tính phí tạm tính (yêu cầu xác thực).
-- `DELETE /api/v1/parking/entries/{ticket}` tính phí và xóa lượt xe (yêu cầu xác thực).
+- `GET /api/v1/parking/entries/{ticket}` tra cứu thông tin xe đang gửi (yêu cầu xác thực, không trả phí).
+- `DELETE /api/v1/parking/entries/{ticket}` lấy xe ra và xóa lượt gửi (yêu cầu xác thực, không tính phí).
 - `GET /health` kiểm tra trạng thái dịch vụ.
 - Loại xe: `car`, `motorbike`, `bicycle`; xe đạp không có biển số, ô tô/xe máy bắt buộc có biển số.
-- Phí tính theo giờ làm tròn lên, tối thiểu một giờ; thời gian vào được server ghi theo UTC.
+- Thời gian gửi xe do server ghi theo UTC.
 - Tài liệu API dự kiến được cung cấp qua Swagger `/docs` và OpenAPI `/openapi.json` khi API được triển khai.
 
 Chi tiết nghiệp vụ, response lỗi và kịch bản T01–T14 nằm trong tài liệu đề bài được cung cấp cho nhóm. Trong repo hiện chưa có bản tài liệu API hoặc mô tả bài toán trong `docs/`; chỉ có `docs/decisions.md`.

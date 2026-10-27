@@ -25,7 +25,7 @@ Các file dưới đây ở `Downloads` được dùng làm mã tham khảo, kh�
 
 **Ý tưởng được tham khảo:** các thao tác GET/POST/DELETE cần truy cập lượt xe.
 
-**Không chuyển vào bước 3 vì:** `process_message` ghép giải mã giao thức, xử lý request và gọi DB trực tiếp. Đây là TCP message handler, không phải repository; kiểm tra bộ ba tùy chọn, response và nghiệp vụ trong file cũng không khớp đặc tả API hiện tại. REST router, xác thực và tính phí thuộc các bước sau.
+**Không chuyển vào bước 3 vì:** `process_message` ghép giải mã giao thức, xử lý request và gọi DB trực tiếp. Đây là TCP message handler, không phải repository; kiểm tra bộ ba tùy chọn, response và nghiệp vụ trong file cũng không khớp đặc tả API hiện tại. REST router và xác thực thuộc các bước sau; tính phí nằm ngoài phạm vi hiện tại.
 
 ### `network.py`
 

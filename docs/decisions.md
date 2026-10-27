@@ -6,6 +6,7 @@
 - `DATABASE_URL` dùng để cấu hình vị trí file SQLite, không nhằm đổi sang một hệ quản trị khác.
 - Xác thực: JWT (HS256), kiểm tra tại middleware chung
 - Giá trị `type`: car, motorbike, bicycle
-- Bảng giá (đ/giờ): ô tô 10.000, xe máy 3.000, xe đạp 1.000; làm tròn lên theo giờ, tối thiểu 1 giờ
+- Phạm vi nghiệp vụ hiện tại: gửi xe và lấy xe; GET chỉ tra cứu thông tin lượt gửi.
+- Không có bảng giá, cấu hình đơn giá, tính phí hoặc trường `charge` trong request/response.
 - Trường lạ trong body: coi là 400
 - Một biển số được phép có hai vé khác nhau trong bãi

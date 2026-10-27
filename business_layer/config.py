@@ -22,10 +22,6 @@ class Settings(BaseSettings):
     jwt_expire_seconds: int = Field(default=3600, gt=0)
     admin_username: str = Field(default="gatekeeper", min_length=1, max_length=50)
     admin_password: SecretStr = SecretStr("secret123")
-    rate_car: int = Field(default=10_000, gt=0)
-    rate_motorbike: int = Field(default=3_000, gt=0)
-    rate_bicycle: int = Field(default=1_000, gt=0)
-
     @field_validator("database_url")
     @classmethod
     def database_url_must_not_be_blank(cls, value: str) -> str:
