@@ -3,7 +3,7 @@ import pathlib
 
 from fastapi.testclient import TestClient
 
-from app.main import app
+from business_layer.main import app
 
 FORBIDDEN = {"fastapi", "starlette", "flask", "sqlalchemy", "sqlite3", "psycopg2"}
 
@@ -15,7 +15,7 @@ def test_health():
 
 
 def test_service_layer_has_no_web_or_db_imports():
-    for path in pathlib.Path("app/service").rglob("*.py"):
+    for path in pathlib.Path("business_layer/services").rglob("*.py"):
         tree = ast.parse(path.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):

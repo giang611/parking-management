@@ -1,241 +1,88 @@
-# Parking Management
+# Parking Management — Pha 1
 
-Hệ thống backend quản lý bãi đỗ xe (đồ án Pha 1): ghi nhận xe vào bãi, kiểm tra xe khi ra, tính phí theo thời gian gửi và loại xe, xóa xe khỏi bãi. Dịch vụ cung cấp REST API (JSON) cho ba loại xe: ô tô, xe máy, xe đạp.
+Backend quản lý bãi đỗ xe theo yêu cầu Pha 1: ghi nhận xe vào, tra cứu phí, lấy xe ra, xác thực JWT và lưu trạng thái qua tầng Repository. Project chọn SQLite làm hệ quản trị cơ sở dữ liệu, chạy bằng file local để hỗ trợ vận hành offline.
 
-## 1. Yêu cầu môi trường
+## Trạng thái hiện tại
 
-- Git
-- Python 3.12.x
-- Docker và Docker Compose (khi chạy bằng container)
-- Visual Studio Code (khuyến nghị)
+Repository hiện có khung thư mục theo tài liệu thiết kế, nhưng chưa hoàn chỉnh API để sử dụng: nhiều router/service/repository, `docker-compose.yml` và script load test vẫn còn rỗng. ASGI app ở `business_layer.main:app` đã có lifespan khởi tạo schema/tài khoản và health endpoint; cần cài dependencies và hoàn thiện các bước tiếp theo để vận hành toàn bộ nghiệp vụ.
 
-## 2. Clone repository
+## Cấu trúc hiện tại
 
-```bash
-git clone https://github.com/hoang-van-duong-ux/parking-management.git
-cd parking-management
+```text
+parking-management/
+├── business_layer/           # Package API, middleware, service và điểm khởi động
+│   ├── api/
+│   ├── middleware/
+│   ├── schemas/
+│   ├── services/
+│   └── main.py
+├── database_persistent/      # Package cấu hình DB, ORM models, repositories, seed
+├── Gate_client/              # Mô phỏng Gate PC
+├── loadtest/                 # Locust và runner cho Kaggle CPU
+├── tests/                    # Kiểm thử
+├── docs/                     # Quyết định thiết kế
+├── docker-compose.yml
+├── requirements.txt
+├── .env.example
+└── README.md
 ```
 
-## 3. Cài đặt
+Kiến trúc mục tiêu: `business_layer/api` → `business_layer/services` → `database_persistent/repositories`. Hai tầng dữ liệu và nghiệp vụ là package Python hợp lệ, có `__init__.py`; service nghiệp vụ không phụ thuộc framework web hoặc thư viện cơ sở dữ liệu. `Gate_client/` là client mô phỏng riêng, không phải package backend.
+
+## Yêu cầu môi trường
+
+- Git
+- Python 3.12
+- Docker Desktop và Docker Compose nếu chạy bằng container
+
+## Cài dependencies
+
+Từ thư mục gốc dự án:
 
 ### Windows PowerShell
 
-Tại thư mục gốc của dự án:
-
 ```powershell
 py -3.12 -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-Nếu PowerShell chặn việc kích hoạt môi trường ảo, chạy một lần:
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-```
-
-### Windows CMD
-
-```cmd
-py -3.12 -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+Copy-Item .env.example .env
 ```
 
 ### Linux / WSL
 
 ```bash
 python3.12 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -r requirements.txt
-```
-
-## 4. Cấu hình
-
-Sao chép file mẫu thành `.env` rồi chỉnh giá trị nếu cần.
-
-Windows:
-
-```powershell
-copy .env.example .env
-```
-
-Linux / WSL:
-
-```bash
 cp .env.example .env
 ```
 
-| Biến | Ý nghĩa | Giá trị mẫu |
+Chỉnh `.env` theo môi trường triển khai. Thay `JWT_SECRET` bằng khóa ngẫu nhiên riêng và thay mật khẩu admin mặc định. Không commit `.env` hoặc thư mục môi trường ảo. Cấu hình được đọc tập trung từ `business_layer/config.py`; schema DB và tài khoản admin được khởi tạo trong lifespan của ứng dụng.
+
+| Biến | Ý nghĩa | Mặc định mẫu |
 |---|---|---|
-| `DATABASE_URL` | Chuỗi kết nối cơ sở dữ liệu | `sqlite:///./parking.db` |
-| `JWT_SECRET` | Khóa bí mật ký token (bắt buộc đổi khi triển khai) | `doi-gia-tri-nay` |
-| `JWT_EXPIRE_SECONDS` | Thời hạn token, tính bằng giây | `3600` |
-| `ADMIN_USERNAME` | Tên đăng nhập tạo sẵn khi khởi động | `gatekeeper` |
-| `ADMIN_PASSWORD` | Mật khẩu của tài khoản tạo sẵn | `secret123` |
-| `RATE_CAR` | Đơn giá ô tô (đồng/giờ) | `10000` |
-| `RATE_MOTORBIKE` | Đơn giá xe máy (đồng/giờ) | `3000` |
-| `RATE_BICYCLE` | Đơn giá xe đạp (đồng/giờ) | `1000` |
+| `DATABASE_URL` | Đường dẫn file SQLite local | `sqlite:///./parking.db` |
+| `JWT_SECRET` | Khóa ký JWT; cần thay bằng giá trị riêng | `doi-gia-tri-nay` |
+| `JWT_EXPIRE_SECONDS` | Thời hạn token (giây) | `3600` |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Tài khoản khởi tạo | `gatekeeper` / `secret123` |
+| `RATE_CAR` | Giá ô tô (đồng/giờ) | `10000` |
+| `RATE_MOTORBIKE` | Giá xe máy (đồng/giờ) | `3000` |
+| `RATE_BICYCLE` | Giá xe đạp (đồng/giờ) | `1000` |
 
-## 5. Chạy dịch vụ
+## Chạy hệ thống
 
-Tại thư mục gốc của dự án.
+Sau khi cài dependencies và tạo `.env`, có thể khởi chạy phần bootstrap hiện có bằng `python -m uvicorn business_layer.main:app --reload`. Endpoint `/health` kiểm tra app; các endpoint nghiệp vụ và Docker chưa hoàn thiện.
 
-Windows (PowerShell hoặc CMD):
+## Đặc tả Phase 1
 
-```powershell
-.venv\Scripts\python.exe -m uvicorn app.main:app --reload
-```
+- REST API JSON, base path `/api/v1`.
+- `POST /api/v1/auth/login` cấp JWT.
+- `POST /api/v1/parking/entries` ghi nhận xe (yêu cầu xác thực).
+- `GET /api/v1/parking/entries/{ticket}` tra cứu và tính phí tạm tính (yêu cầu xác thực).
+- `DELETE /api/v1/parking/entries/{ticket}` tính phí và xóa lượt xe (yêu cầu xác thực).
+- `GET /health` kiểm tra trạng thái dịch vụ.
+- Loại xe: `car`, `motorbike`, `bicycle`; xe đạp không có biển số, ô tô/xe máy bắt buộc có biển số.
+- Phí tính theo giờ làm tròn lên, tối thiểu một giờ; thời gian vào được server ghi theo UTC.
+- Tài liệu API dự kiến được cung cấp qua Swagger `/docs` và OpenAPI `/openapi.json` khi API được triển khai.
 
-Linux / WSL:
-
-```bash
-.venv/bin/python -m uvicorn app.main:app --reload
-```
-
-### Kiểm tra API
-
-Sau khi dịch vụ chạy, truy cập:
-
-- Health check: http://127.0.0.1:8000/health
-- API documentation (Swagger UI): http://127.0.0.1:8000/docs
-- Đặc tả OpenAPI: http://127.0.0.1:8000/openapi.json
-
-Dừng server bằng `Ctrl + C`.
-
-## 6. Chạy bằng Docker
-
-Mục này áp dụng sau khi repository có `Dockerfile` và `docker-compose.yml`.
-
-```bash
-docker compose up --build
-```
-
-Dịch vụ lắng nghe tại http://127.0.0.1:8000. Dừng bằng `Ctrl + C`, hoặc chạy `docker compose down`.
-
-## 7. Kiểm thử
-
-```bash
-pytest -q
-```
-
-Bộ kiểm thử gồm:
-
-- Kiểm thử nghiệp vụ và API theo các kịch bản T01 đến T14 trong tài liệu đặc tả API.
-- Kiểm tra luật phân tầng: tầng nghiệp vụ (`app/service`) không được import web framework hay thư viện cơ sở dữ liệu.
-
-## 8. Kiến trúc
-
-Dự án chia thành ba tầng, phụ thuộc theo một chiều từ trên xuống:
-
-```
-API  ->  Nghiệp vụ  ->  Truy cập dữ liệu
-```
-
-| Tầng | Thư mục | Trách nhiệm |
-|---|---|---|
-| API | `app/api` | Nhận HTTP, kiểm tra token ở middleware chung, ánh xạ lỗi nghiệp vụ sang mã HTTP |
-| Nghiệp vụ | `app/service` | Kiểm tra luật, tính phí, đăng nhập; chỉ phụ thuộc interface Repository, không import web framework hay thư viện DB |
-| Truy cập dữ liệu | `app/repository` | Cài đặt Repository bằng ORM (SQLAlchemy) |
-
-Cấu trúc thư mục:
-
-```
-parking-management/
-├─ app/
-│  ├─ api/          # router, schema, middleware xác thực
-│  ├─ service/      # nghiệp vụ, tính phí, exception, interface Repository
-│  ├─ repository/   # model ORM và cài đặt Repository
-│  └─ main.py       # lắp ghép các tầng
-├─ tests/           # kiểm thử
-├─ loadtest/        # kịch bản mô phỏng Gate PC (kiểm thử tải)
-├─ docs/            # tài liệu mô tả bài toán, đặc tả API, quyết định thiết kế
-├─ requirements.txt
-├─ .env.example
-└─ README.md
-```
-
-## 9. Tổng quan API
-
-Base path: `/api/v1`. Dữ liệu dạng JSON. Các endpoint cần xác thực dùng header `Authorization: Bearer <access_token>`.
-
-| Method | Đường dẫn | Chức năng | Xác thực |
-|---|---|---|---|
-| POST | `/api/v1/auth/login` | Đăng nhập, nhận token | Không |
-| POST | `/api/v1/parking/entries` | Gửi xe | Có |
-| GET | `/api/v1/parking/entries/{ticket}` | Kiểm tra xe và xem phí tạm tính | Có |
-| DELETE | `/api/v1/parking/entries/{ticket}` | Lấy xe: trả phí và xóa khỏi bãi | Có |
-| GET | `/api/v1/parking/entries` | Danh sách xe trong bãi (tùy chọn) | Có |
-| GET | `/health` | Kiểm tra dịch vụ sống | Không |
-
-Các mã trả về chính:
-
-| Mã | Ý nghĩa |
-|---|---|
-| 200 | Thành công, có body (ví dụ phí cần thu) |
-| 204 | Gửi xe thành công, không có body |
-| 400 | Sai format hoặc `type` không hợp lệ |
-| 401 | Thiếu hoặc sai token, hoặc sai tài khoản đăng nhập |
-| 404 | Vé hoặc biển số không có trong bãi, hoặc không khớp |
-| 409 | Vé đang gắn với một xe trong bãi |
-| 422 | Xe đạp có biển số, hoặc ô tô/xe máy thiếu biển số |
-
-Chi tiết từng endpoint (request, response, ví dụ) xem file đặc tả API trong thư mục `docs/`.
-
-### Ví dụ nhanh
-
-```bash
-# 1. Đăng nhập
-curl -X POST http://127.0.0.1:8000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"gatekeeper","password":"secret123"}'
-
-# 2. Gửi xe (thay <TOKEN> bằng access_token nhận được)
-curl -X POST http://127.0.0.1:8000/api/v1/parking/entries \
-  -H "Authorization: Bearer <TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{"ticket":"T0001","plate":"29A-12345","type":"car"}'
-
-# 3. Lấy xe
-curl -X DELETE -H "Authorization: Bearer <TOKEN>" \
-  "http://127.0.0.1:8000/api/v1/parking/entries/T0001?type=car&plate=29A-12345"
-```
-
-## 10. Nghiệp vụ chính
-
-- Loại xe: `car` (ô tô), `motorbike` (xe máy), `bicycle` (xe đạp).
-- Xe đạp không có biển số; ô tô và xe máy bắt buộc có biển số.
-- Một vé chỉ gắn với tối đa một xe đang ở trong bãi.
-- Thời điểm vào do server gắn khi gửi xe thành công.
-- Phí = số giờ làm tròn lên (tối thiểu 1 giờ) nhân đơn giá theo loại xe.
-
-
-## 12. Công nghệ sử dụng
-
-- Backend: Python, FastAPI, Uvicorn
-- ORM và cơ sở dữ liệu: SQLAlchemy, SQLite (baseline)
-- Xác thực: JWT
-- Kiểm thử: pytest
-- Đóng gói: Docker
-- Version control: Git và GitHub
-- API testing: Swagger UI của FastAPI
-- IDE: Visual Studio Code
-
-## 13. Lưu ý khi phát triển
-
-- Không commit thư mục `.venv/` hoặc file `*.db`.
-- Không commit file `.env` chứa thông tin bí mật; dùng `.env.example` làm mẫu cấu hình.
-- Khi thêm dependency, cập nhật `requirements.txt`.
-- Giữ tầng `app/service` không import web framework hay thư viện cơ sở dữ liệu.
-- Đặt tên commit theo quy ước: `feat:`, `fix:`, `test:`, `docs:`, `chore:`.
-
-## 14. Tài liệu
-
-Thư mục `docs/` chứa:
-
-- Mô tả bài toán và nghiệp vụ cơ bản.
-- Đặc tả API.
-- `decisions.md`: các quyết định thiết kế của Pha 1.
-
-## 15. Thành viên
-
-    Nguyễn Hà Giang
-    Hoàng Văn Dương
-    Nguyễn Văn Tấn
+Chi tiết nghiệp vụ, response lỗi và kịch bản T01–T14 nằm trong tài liệu đề bài được cung cấp cho nhóm. Trong repo hiện chưa có bản tài liệu API hoặc mô tả bài toán trong `docs/`; chỉ có `docs/decisions.md`.

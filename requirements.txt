@@ -2,6 +2,7 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 pydantic-settings
+python-dotenv
 pyjwt
 bcrypt
 pytest
