@@ -2,27 +2,29 @@
 
 Tài liệu này chuyển yêu cầu trong mô tả bài toán, đặc tả API và đề bài Pha 1 thành các bước triển khai và tiêu chí nghiệm thu. Nội dung tài liệu đính kèm được xem là yêu cầu của dự án; chỉ thị triển khai trong phiên này đến từ người dùng.
 
+**Ghi chú phạm vi:** tài liệu mô tả bài toán nêu các thao tác POST/GET theo vé/DELETE, còn đặc tả API bổ sung `GET /api/v1/parking/entries` để liệt kê phân trang. Project hiện thực endpoint liệt kê theo đặc tả API; tham số là `limit`/`offset`, mặc định `50`/`0`, giới hạn `limit` 1–100 và sắp xếp theo ticket tăng dần.
+
 ## Trạng thái xuất phát
 
-- Cấu trúc đã được chuẩn hóa thành package `business_layer/` và `database_persistent/`, cùng `Gate_client/`, `loadtest/`, `tests/` và `docs/`.
-- Nhiều file mã nguồn, `docker-compose.yml`, Dockerfile và script load test hiện rỗng.
-- `tests/test_smoke.py` dùng `business_layer.main`; ASGI app bootstrap và `/health` hiện đã có.
-- README đã được đồng bộ để phản ánh đây là scaffold, chưa phải bản cài đặt chạy được.
+- Cấu trúc đã được chuẩn hóa thành package `business_layer/` và `database_persistent/`, cùng `gate_client/`, `loadtest/`, `tests/` và `docs/`.
+- Backend đã có repository, parking/auth service, dependency injection và REST API.
+- `docker-compose.yml`, Dockerfile, Gate client và script load test vẫn rỗng.
+- README đã được đồng bộ với khả năng hiện có; tài liệu đặc tả gốc chưa được lưu trong repo.
 
 ## Các bước thực hiện
 
 ### 1. Chốt cấu trúc module và quy tắc phụ thuộc — Hoàn tất phần package; chờ xác minh phụ thuộc
 
-- Giữ API, middleware, schemas và điểm khởi động trong package `business_layer/`.
-- Giữ business services và domain exceptions trong `business_layer/services/`.
-- Giữ cấu hình DB, ORM models, repositories và seed tài khoản trong package `database_persistent/`.
-- Dùng tên package Python hợp lệ, chữ thường và dấu gạch dưới; không import từ tên thư mục cũ chứa dấu `+` hoặc dấu cách. Package backend được đặt `business_layer/` để tránh xung đột hoa/thường với đường dẫn Git cũ `Business/` trên Windows.
-- Đã thêm `__init__.py` để khai báo các package `business_layer`, các subpackage API/middleware/schemas/services và `database_persistent` cùng models/repositories.
-- Đã cập nhật test khói sang `business_layer.main` và đường dẫn kiểm tra tầng service sang `business_layer/services`.
-- Quy tắc đã chốt: service chỉ phụ thuộc interface/port của repository; không import FastAPI, SQLAlchemy hoặc driver DB. Chưa thể kiểm tra thực tế vì các file service/API/repository hiện còn rỗng.
-- README và kế hoạch này đã được cập nhật theo module path mới.
+- [x] Giữ API, middleware, schemas và điểm khởi động trong package `business_layer/`.
+- [x] Giữ business services và domain exceptions trong `business_layer/services/`.
+- [x] Giữ cấu hình DB, ORM models, repositories và seed tài khoản trong package `database_persistent/`.
+- [x] Dùng tên package Python hợp lệ, chữ thường và dấu gạch dưới; không import từ tên thư mục cũ chứa dấu `+` hoặc dấu cách. Package backend được đặt `business_layer/` để tránh xung đột hoa/thường với đường dẫn Git cũ `Business/` trên Windows.
+- [x]Đã thêm `__init__.py` để khai báo các package `business_layer`, các subpackage API/middleware/schemas/services và `database_persistent` cùng models/repositories.
+- [x]Đã cập nhật test khói sang `business_layer.main` và đường dẫn kiểm tra tầng service sang `business_layer/services`.
+- [x]Quy tắc đã chốt: service chỉ phụ thuộc interface/port của repository; test kiến trúc kiểm tra service không import FastAPI, SQLAlchemy hoặc driver DB.
+- [x]README và kế hoạch này đã được cập nhật theo module path mới.
 
-**Nghiệm thu:** tên package và module path đã được chốt; module ASGI `business_layer.main:app` đã được tạo để nối startup. Hướng phụ thuộc API → nghiệp vụ → repository mới là quy ước thiết kế, chưa nghiệm thu được cho tới khi có mã nguồn các tầng.
+**Nghiệm thu:** tên package và module path đã chốt; `business_layer.main:app` nối API với service và repository qua dependency injection. Test kiến trúc kiểm tra ranh giới tầng.
 
 ### 2. Xác định cấu hình và dữ liệu — Hoàn tất triển khai; chờ nghiệm thu runtime
 
@@ -36,19 +38,20 @@ Tài liệu này chuyển yêu cầu trong mô tả bài toán, đặc tả API 
 - [x] Đã gọi `initialize_database()` từ lifespan của `business_layer.main:app`; endpoint `/health` tối thiểu cũng đã được thêm để app có thể khởi động và kiểm tra.
 - [x] Dùng SQLite làm hệ quản trị duy nhất của project Pha 1; `DATABASE_URL` cấu hình vị trí file local.
 
-**Nghiệm thu:** cấu hình/model/seed và startup hook đã có trong mã nguồn; chưa xác nhận runtime do môi trường hiện tại thiếu SQLAlchemy. Sau khi cài requirements, cần xác minh DB/tài khoản được tạo khi khởi động và dữ liệu còn sau restart.
+**Nghiệm thu:** cấu hình/model/seed/startup hook đã có; repository chạy test với SQLite tạm. Việc chạy ứng dụng bằng Uvicorn và kiểm tra dữ liệu tồn tại sau restart vẫn cần nghiệm thu thủ công.
 
-### 3. Hoàn thiện Repository/Data Access — Hoàn tất phần repository; chờ tích hợp nghiệp vụ/race test
+### 3. Hoàn thiện Repository/Data Access — Hoàn tất triển khai và nghiệm thu concurrency
 
 - [x] Định nghĩa interface repository thuần Python ở tầng nghiệp vụ.
 - [x] Cài đặt repository cho xe: tìm theo ticket, tìm khớp bộ ba, thêm và xóa.
 - [x] Cài đặt repository người dùng để lấy password hash theo username.
 - [x] Dùng khóa chính ticket để DB từ chối duplicate; repository trả kết quả conflict mà không rollback transaction ngoài.
 - [x] Lưu `time_in` có timezone và chuẩn hóa sang UTC.
-- [ ] Tích hợp các port với parking/auth service và ánh xạ duplicate thành lỗi nghiệp vụ ở bước 4/5.
-- [ ] Xác minh hai request POST đồng thời theo kịch bản T14 ở bước 7.
+- [x] Tích hợp vehicle/user ports với parking/auth service; duplicate ticket thành `TICKET_IN_USE`.
+- [x] Test hai insert song song cùng ticket: đúng một thành công và một conflict.
+- [x] Test tích hợp API cho hai POST song song cùng ticket: một request thành công, request còn lại trả conflict.
 
-**Nghiệm thu:** repository tests chạy qua với SQLite in-memory; service integration và concurrency test vẫn chờ các bước 4/5/7. Ghi chú phần tham khảo ba file ngoài repo nằm trong `docs/step-3-repository-notes.md`.
+**Nghiệm thu:** repository và API concurrency tests chạy qua với SQLite. Ghi chú phần tham khảo ba file ngoài repo nằm trong `docs/step-3-repository-notes.md`.
 
 ### 4. Hoàn thiện nghiệp vụ thuần Python
 
@@ -64,68 +67,76 @@ Tài liệu này chuyển yêu cầu trong mô tả bài toán, đặc tả API 
 
 Service thuần Python nằm tại `business_layer/services/parking_service.py`, nhận `VehicleRepositoryPort` qua constructor và không phụ thuộc FastAPI/SQLAlchemy. `BusinessError.code` cung cấp mã lỗi miền để API ánh xạ ở bước 6.
 
-**Nghiệm thu:** `pytest tests/test_business_rules.py -q`: 18 passed; toàn bộ suite khả dụng trong môi trường hiện tại: 28 passed, 1 deselected (`test_health`, từng treo trong lần chạy trước do asyncio Windows). `git diff --check` không báo lỗi whitespace.
-
-**Nghiệm thu:** service test được độc lập với framework web và DB; các luật BR-01 đến BR-10 được ánh xạ thành kết quả/lỗi miền rõ ràng.
+**Nghiệm thu bước 4 lúc hoàn tất:** `pytest tests/test_business_rules.py -q`: 18 passed; suite lúc đó: 28 passed, 1 deselected vì test health bị treo trong asyncio sandbox Windows. Test tổng hợp mới nhất được ghi tại bước 7.
 
 ### 5. Đăng nhập và middleware JWT
 
-- Tạo login kiểm tra username và password hash, trả JWT HS256 gồm `sub` và `exp`.
-- Verify token offline bằng secret cấu hình; không phụ thuộc dịch vụ Internet/OAuth.
-- Kiểm tra token tập trung bằng middleware/filter, áp dụng cho các endpoint nghiệp vụ.
-- Đảm bảo request thiếu/sai/hết hạn token nhận lỗi 401 trước lỗi validation body/query.
-- Chuẩn hóa lỗi xác thực thành JSON `{ "error": "UNAUTHORIZED" }`; login sai trả `INVALID_CREDENTIALS`.
+- [x] Login kiểm tra username/password bcrypt và trả JWT HS256 gồm `sub`, `iat`, `exp`.
+- [x] Verify token offline bằng secret cấu hình; không phụ thuộc dịch vụ Internet/OAuth.
+- [x] Response login dùng `token_type: "Bearer"` và `expires_in` theo `JWT_EXPIRE_SECONDS`; service login vẫn chỉ trả JWT string.
+- [x] Bảo vệ các endpoint parking bằng dependency Bearer dùng chung.
+- [x] Ánh xạ token thiếu/sai/hết hạn thành lỗi miền `UNAUTHORIZED`, status 401 và JSON phẳng; response có `WWW-Authenticate: Bearer`.
+- [x] Login sai trả `INVALID_CREDENTIALS`, status 401 và JSON phẳng.
+- [x] HTTP exception cho route không tồn tại và method không hỗ trợ trả `NOT_FOUND` (404) / `METHOD_NOT_ALLOWED` (405).
+- [x] Thêm unit test login/JWT và test API cho thứ tự auth trước validation.
 
-**Nghiệm thu:** login đúng cấp token; login sai trả 401; endpoint GET và POST được bảo vệ; request không token trả 401 trước lỗi 400/422.
+**Nghiệm thu:** suite đầy đủ mới nhất đạt 69 passed, 1 cảnh báo deprecation từ Starlette/httpx.
 
 ### 6. Xây dựng REST API và tài liệu OpenAPI
 
-- `POST /api/v1/auth/login`: nhận username/password; trả access token.
-- `POST /api/v1/parking/entries`: ghi nhận xe; thành công trả 204 không body.
-- `GET /api/v1/parking/entries/{ticket}`: yêu cầu query `type`, và `plate` theo loại xe; trả ticket, plate, type, `time_in`; không tính phí hoặc xóa xe.
-- `DELETE /api/v1/parking/entries/{ticket}`: xác nhận bộ ba và xóa lượt xe; trả `204 No Content`, không có dữ liệu phí.
-- `GET /api/v1/parking/entries`: hỗ trợ danh sách phân trang nếu triển khai endpoint tùy chọn trong đặc tả.
-- `GET /health`: kiểm tra tình trạng service.
-- Dùng JSON nhất quán cho lỗi: `INVALID_FORMAT`, `INVALID_TYPE`, `INVALID_CREDENTIALS`, `UNAUTHORIZED`, `VEHICLE_NOT_FOUND`, `TICKET_IN_USE`, `PLATE_NOT_ALLOWED`, `PLATE_REQUIRED`.
-- Bảo đảm Swagger `/docs` và OpenAPI `/openapi.json` hoạt động.
-- ASGI bootstrap `business_layer.main:app`, lifespan khởi tạo DB và endpoint `/health` tối thiểu đã được tạo ở bước 2.
+- [x] `POST /api/v1/auth/login` cấp access token.
+- [x] `POST /api/v1/parking/entries` ghi nhận xe và trả 204 rỗng.
+- [x] GET tra cứu ticket/type/plate, trả `ticket`, `plate`, `type`, `time_in` và giữ nguyên record.
+- [x] GET `/api/v1/parking/entries` trả danh sách xe phân trang qua `limit`/`offset`, kèm `items`, `total`, `limit`, `offset`; sắp xếp ổn định theo ticket tăng dần.
+- [x] DELETE xác nhận bộ ba, xóa record và trả 200 cùng `{"ticket":"..."}`.
+- [x] `GET /health` và OpenAPI/Swagger được nối vào app.
+- [x] Xác thực được khai báo ở cấp parking router; response lỗi chung và lỗi riêng được mô tả trong OpenAPI bằng `ErrorResponse`.
+- [x] Chuẩn hóa JSON phẳng cho business errors và validation; lỗi format/field lạ/type trả 400, lỗi luật biển số trả 422.
+- [x] Xe đạp có `plate` (kể cả `null`) bị từ chối; car/motorbike thiếu plate bị từ chối.
+- [x] Cập nhật test hợp đồng API cho phản hồi DELETE và endpoint danh sách phân trang.
+- [x] Chạy HTTP endpoint integration tests sau khi thêm endpoint danh sách và đổi phản hồi DELETE.
 
-**Nghiệm thu:** method, path, status code và payload khớp đặc tả; lỗi validation không bị FastAPI tự trả định dạng khác; OpenAPI mô tả auth Bearer và request/response.
+**Nghiệm thu:** route, schema, security, response lỗi và OpenAPI đã được kiểm tra bằng unit/schema và HTTP integration tests.
 
 ### 7. Đồng bộ kiểm thử chức năng và thứ tự lỗi
 
-- Import của test khói đã trỏ đến `business_layer.main`; tiếp tục xác nhận health endpoint khi chạy suite.
-- Bổ sung/hoàn thiện unit test nghiệp vụ, repository test với SQLite tạm và integration test API; không kiểm thử tính phí.
-- Kiểm chứng pipeline: auth → format → type → luật biển số → tồn tại.
-- Bao phủ auth, format, type, biển số, gửi xe, ticket trùng, GET tra cứu đúng/sai, DELETE thành công và race condition; các response không có `charge`.
-- Kiểm tra sau DELETE, GET cùng vé phải trả 404; GET trước DELETE không làm mất dữ liệu.
-- Kiểm tra kiến trúc: service không import web framework hoặc thư viện DB.
+- [x] Giữ test khói và test kiến trúc; xác nhận service không import framework/DB.
+- [x] Bổ sung unit test auth, business service và repository dùng SQLite; không kiểm thử phí.
+- [x] Thêm API integration tests cho auth, request lạ, auth-order, gửi xe, GET chỉ đọc, GET sai bộ ba, DELETE trả mã vé, danh sách phân trang, duplicate ticket, OpenAPI và response không có `charge`.
+- [x] Test repository race và API hai POST đồng thời cùng ticket đều cho một request thành công, một request conflict.
+- [x] Lệnh suite chuẩn được ghi trong README: `python -m pytest -q`.
+- [x] Bổ sung kiểm thử repository cho phân trang và cập nhật kiểm thử mã lỗi format/type thành HTTP 400.
+- [x] Chạy lại toàn bộ HTTP integration tests, test health và API-level duplicate-ticket concurrency test sau các cập nhật login/404/405.
 
-**Nghiệm thu:** toàn bộ T01–T14 có kết quả mong đợi; hai POST đồng thời cùng ticket cho đúng một thành công và một conflict; test suite chạy bằng một lệnh được ghi trong README.
+**Nghiệm thu:** `python -m pytest -q`: 69 passed, 1 cảnh báo deprecation từ Starlette/httpx. Bước 7 đã hoàn tất; project sẵn sàng bắt đầu bước 8.
 
 ### 8. Đóng gói Docker và chạy offline
 
-- Viết `business_layer/Dockerfile` cho ứng dụng backend.
-- Hoàn thiện `docker-compose.yml` để khởi chạy backend và mount volume chứa file SQLite; không cần service database riêng.
-- Truyền cấu hình qua environment/`.env`, không nhúng secret vào image.
-- Thiết lập health check và mapping port; đảm bảo image cài dependencies từ manifest đã chốt.
-- Xác minh dịch vụ hoạt động trên localhost/LAN mà không gọi dịch vụ xác thực bên ngoài.
-- Chỉ container hóa `Gate_client/` nếu thực sự cần; tài liệu thiết kế ghi container này là tùy chọn.
+- [x] Viết `business_layer/Dockerfile` cho ứng dụng backend Python 3.12; chạy Uvicorn bằng user không phải root.
+- [x] Hoàn thiện `docker-compose.yml` với một service API, mount named volume `parking_data` tại `/data` cho SQLite; không có service database riêng.
+- [x] Truyền cấu hình từ `.env`; `.dockerignore` loại `.env`, database local, môi trường ảo và artifacts khỏi build context/image.
+- [x] Khai báo health check qua `/health`, port mapping `8000:8000`, restart policy và SQLite URL `sqlite:////data/parking.db`.
+- [x] Build và khởi chạy bằng Docker Engine; xác nhận container Healthy, đăng nhập/gửi/tra cứu/xóa API, `/docs` trả 200 và dữ liệu SQLite còn sau khi recreate container.
+- [x] Xác minh khởi động lại sau lần build với `--pull never`; container Healthy, `/health` trả `ok` và `/docs` trả 200.
+- Chỉ container hóa `gate_client/` nếu thực sự cần; tài liệu thiết kế ghi container này là tùy chọn.
 
-**Nghiệm thu:** `docker compose up --build` tạo service khỏe; API, `/docs`, dữ liệu persistent và xác thực hoạt động offline; README có lệnh dừng và cấu hình.
+**Nghiệm thu:** `docker compose config -q` hợp lệ; build và runtime hoạt động, vé SQLite còn sau khi recreate container, service Healthy, `/health` trả `ok`, `/docs` trả 200 và khởi động lại thành công với `--pull never`. Bước 8 hoàn tất; image nền và dependencies cần được tải trước để chạy khi offline.
 
 ### 9. Hoàn thiện Gate client và load test Kaggle
 
-- Gate client mô phỏng login, gửi xe, tra cứu trạng thái và lấy xe; không hiển thị bảng giá hoặc phí.
-- Hoàn thiện `loadtest/locustfile.py` theo luồng xác thực và nghiệp vụ; không để benchmark làm sai lệch dữ liệu hoặc dùng ticket cố định gây xung đột.
-- Hoàn thiện runner Kaggle CPU, ghi lại cấu hình phần cứng, thời lượng, concurrency, throughput, latency và lỗi.
-- Chạy benchmark baseline trên một cấu hình Kaggle CPU cố định theo yêu cầu đề bài; lưu hướng dẫn và kết quả trong `docs/`.
+- [x] Gate client tương tác mô phỏng login, gửi xe, tra cứu và lấy xe; không hiển thị bảng giá/phí.
+- [x] Thêm test unit cho HTTP client: Bearer auth, payload xe đạp không có plate, query tra cứu/lấy xe và mã lỗi API.
+- [x] Thêm `requirements-loadtest.txt` tách Locust khỏi image runtime; `locustfile.py` chạy POST → GET → DELETE bằng ticket UUID riêng, xóa record cuối mỗi vòng và làm mới JWT trước khi hết hạn.
+- [x] Hoàn thiện `kaggle_runner.sh` để kiểm tra `/health`, ghi phần cứng/phần mềm/config, throughput, latency, failures, CSV và HTML vào `docs/benchmarks/<run-id>/`.
+- [x] Ghi hướng dẫn cài dependency, chạy Gate client, chuẩn bị Backend/Kaggle secrets và lưu artifact tại README cùng `docs/benchmarks/README.md`.
+- [ ] Cài dependencies và chạy baseline trên Kaggle CPU thật; lưu kết quả benchmark đo được trong `docs/benchmarks/`.
 
-**Nghiệm thu:** một người khác có thể chạy client và benchmark theo hướng dẫn; kết quả baseline có đủ cấu hình để lặp lại.
+**Nghiệm thu:** Gate client có unit tests; Locust workload và runner có hướng dẫn cùng định dạng artifact. Baseline Kaggle vẫn cần chạy trong Kaggle; không ghi số liệu thay thế khi chưa có lần chạy thực.
 
 ### 10. Đồng bộ tài liệu và chuẩn bị bàn giao
 
 - Cập nhật README với đúng module path, setup, cấu hình, lệnh chạy local/Docker, API và lệnh kiểm thử.
+- [x] README mô tả lỗi `NOT_FOUND`/`METHOD_NOT_ALLOWED`, response login `token_type`/`expires_in`; thống nhất tên thư mục `gate_client/`.
 - Đưa bản mô tả bài toán và đặc tả API vào `docs/` hoặc cung cấp liên kết/tên tệp rõ ràng; không ghi rằng tài liệu tồn tại trong repo nếu chưa thêm.
 - Ghi kiến trúc ba tầng, cách chạy offline, ERD/schema và quyết định thiết kế.
 - Kiểm tra `.gitignore` bỏ qua `.venv/`, `venv/`, `.env`, DB local, cache và artifact benchmark tạm.

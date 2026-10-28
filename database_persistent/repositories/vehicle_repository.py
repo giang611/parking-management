@@ -1,6 +1,6 @@
 """SQLAlchemy implementation of the parked-vehicle repository port."""
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -27,6 +27,19 @@ class SqlAlchemyVehicleRepository(VehicleRepositoryPort):
     def get_by_ticket(self, ticket: str) -> ParkedVehicleRecord | None:
         vehicle = self._session.get(ParkedVehicle, ticket)
         return self._to_record(vehicle) if vehicle is not None else None
+
+    def list_page(
+        self, limit: int, offset: int
+    ) -> tuple[list[ParkedVehicleRecord], int]:
+        total = self._session.scalar(select(func.count()).select_from(ParkedVehicle)) or 0
+        statement = (
+            select(ParkedVehicle)
+            .order_by(ParkedVehicle.ticket.asc())
+            .limit(limit)
+            .offset(offset)
+        )
+        vehicles = self._session.scalars(statement).all()
+        return [self._to_record(vehicle) for vehicle in vehicles], total
 
     def find_match(
         self, ticket: str, plate: str | None, vehicle_type: str

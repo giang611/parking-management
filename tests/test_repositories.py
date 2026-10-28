@@ -1,4 +1,8 @@
 from datetime import datetime, timedelta, timezone
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from threading import Barrier
+from uuid import uuid4
 
 import pytest
 from sqlalchemy import create_engine
@@ -108,6 +112,19 @@ def test_delete_vehicle_removes_only_the_requested_ticket(session):
     assert repository.delete_by_ticket("missing") is False
 
 
+def test_list_page_returns_ticket_sorted_records_and_total(session):
+    repository = SqlAlchemyVehicleRepository(session)
+    now = datetime.now(timezone.utc)
+    for ticket in ("T-list-c", "T-list-a", "T-list-b"):
+        repository.add(ParkedVehicleRecord(ticket, None, "bicycle", now))
+    session.commit()
+
+    records, total = repository.list_page(limit=1, offset=1)
+
+    assert [record.ticket for record in records] == ["T-list-b"]
+    assert total == 3
+
+
 def test_user_repository_returns_credentials_by_username(session):
     session.add(User(username="gatekeeper", password_hash="bcrypt-hash"))
     session.commit()
@@ -117,3 +134,37 @@ def test_user_repository_returns_credentials_by_username(session):
         username="gatekeeper", password_hash="bcrypt-hash"
     )
     assert repository.get_by_username("unknown") is None
+
+
+def test_two_concurrent_inserts_for_same_ticket_have_one_winner():
+    database = Path.cwd() / f".race-{uuid4().hex}.db"
+    engine = create_engine(
+        f"sqlite:///{database}",
+        connect_args={"check_same_thread": False, "timeout": 10},
+    )
+    Base.metadata.create_all(engine)
+    barrier = Barrier(2)
+
+    def insert(plate: str) -> bool:
+        with Session(engine) as db_session:
+            repository = SqlAlchemyVehicleRepository(db_session)
+            barrier.wait(timeout=5)
+            result = repository.add(
+                ParkedVehicleRecord(
+                    "T-race", plate, "car", datetime.now(timezone.utc)
+                )
+            )
+            db_session.commit()
+            return result
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            outcomes = list(pool.map(insert, ["29A-10000", "29B-20000"]))
+        assert sorted(outcomes) == [False, True]
+        with Session(engine) as db_session:
+            record = SqlAlchemyVehicleRepository(db_session).get_by_ticket("T-race")
+            assert record is not None
+    finally:
+        Base.metadata.drop_all(engine)
+        engine.dispose()
+        database.unlink(missing_ok=True)

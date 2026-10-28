@@ -29,6 +29,12 @@ class VehicleRepositoryPort(Protocol):
 
     def get_by_ticket(self, ticket: str) -> ParkedVehicleRecord | None: ...
 
+    def list_page(
+        self, limit: int, offset: int
+    ) -> tuple[list[ParkedVehicleRecord], int]:
+        """Return one stable page and the total number of parked vehicles."""
+        ...
+
     def find_match(
         self, ticket: str, plate: str | None, vehicle_type: str
     ) -> ParkedVehicleRecord | None: ...

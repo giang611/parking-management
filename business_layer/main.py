@@ -6,22 +6,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from business_layer.api.errors import business_error_response, validation_error_response
 from business_layer.services.exceptions import BusinessError
 from database_persistent.seed import initialize_database
 
-# Error-code → HTTP status mapping
-_BUSINESS_STATUS: dict[str, int] = {
-    "TICKET_IN_USE": 409,
-    "VEHICLE_NOT_FOUND": 404,
-    "INVALID_CREDENTIALS": 401,
-    "UNAUTHORIZED": 401,
-    "INVALID_FORMAT": 422,
-    "INVALID_TYPE": 422,
-    "PLATE_REQUIRED": 422,
-    "PLATE_NOT_ALLOWED": 422,
-}
-
+HTTP_ERRORS = {404: "NOT_FOUND", 405: "METHOD_NOT_ALLOWED"}
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -41,13 +32,23 @@ app = FastAPI(
 
 @app.exception_handler(BusinessError)
 async def business_error_handler(_: Request, exc: BusinessError) -> JSONResponse:
-    status = _BUSINESS_STATUS.get(exc.code, 422)
-    return JSONResponse(status_code=status, content={"error": exc.code})
+    return business_error_response(exc)
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_error_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
-    return JSONResponse(status_code=422, content={"error": "INVALID_FORMAT"})
+    return validation_error_response(exc.errors())
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_error_handler(
+    _: Request, exc: StarletteHTTPException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": HTTP_ERRORS.get(exc.status_code, "HTTP_ERROR")},
+        headers=exc.headers,
+    )
 
 
 # ── Routers ───────────────────────────────────────────────────────────────────

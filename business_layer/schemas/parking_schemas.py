@@ -2,11 +2,13 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ParkEntryRequest(BaseModel):
     """Body for POST /api/v1/parking/entries."""
+
+    model_config = ConfigDict(extra="forbid")
 
     ticket: str = Field(..., min_length=1, max_length=64)
     plate: str | None = Field(default=None, max_length=15)
@@ -20,6 +22,21 @@ class ParkEntryResponse(BaseModel):
     plate: str | None
     type: str
     time_in: datetime
+
+
+class RetrieveEntryResponse(BaseModel):
+    """Response after a vehicle has been retrieved from the parking lot."""
+
+    ticket: str
+
+
+class ParkEntryPageResponse(BaseModel):
+    """Paginated list of currently parked vehicles."""
+
+    items: list[ParkEntryResponse]
+    limit: int
+    offset: int
+    total: int
 
 
 class ErrorResponse(BaseModel):

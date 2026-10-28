@@ -1,0 +1,32 @@
+name: parking-management
+
+services:
+  api:
+    image: parking-management-api:local
+    build:
+      context: .
+      dockerfile: business_layer/Dockerfile
+    pull_policy: never
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: sqlite:////data/parking.db
+    ports:
+      - "8000:8000"
+    volumes:
+      - parking_data:/data
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).read()"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  parking_data:

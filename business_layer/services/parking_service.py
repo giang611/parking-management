@@ -49,6 +49,11 @@ class ParkingService:
             raise BusinessError("VEHICLE_NOT_FOUND")
         return record
 
+    def list_parked(
+        self, limit: int, offset: int
+    ) -> tuple[list[ParkedVehicleRecord], int]:
+        return self._vehicles.list_page(limit, offset)
+
     @staticmethod
     def _ticket(value: object) -> str:
         if not isinstance(value, str):
