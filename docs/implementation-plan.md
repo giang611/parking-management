@@ -141,9 +141,11 @@ Service thuần Python nằm tại `business_layer/services/parking_service.py`,
 - [x] Ghi kiến trúc ba tầng, cách chạy offline, ERD/schema và quyết định thiết kế trong `docs/architecture.md` và `docs/decisions.md`.
 - [x] Cập nhật `.gitignore` cho `.venv/`, `venv/`, `.env`, DB local, cache, coverage và benchmark run sinh ra; baseline đã nghiệm thu vẫn được giữ trong Git.
 - [x] Kiểm tra danh sách file theo dõi: không có `.env`, DB local, môi trường ảo hoặc cache; có cấu hình mẫu và benchmark baseline được chọn.
-- [ ] Nghiệm thu clone mới từ commit bàn giao: cài dependencies, tạo `.env`, chạy app, health/Swagger, test và benchmark theo README.
+- [x] Clone commit bàn giao `700f114`, tạo `.env` từ mẫu, chạy API; `/health` trả `ok`, `/docs` trả HTTP 200.
+- [x] Chạy nhóm test độc lập trên clone: 41 passed; baseline Kaggle đã nghiệm thu ở bước 9 và được giữ làm artifact repo.
+- [ ] Cài dependencies hoàn toàn mới và chạy đủ `python -m pytest -q` trên máy dev/CI. Codex sandbox treo ở các test HTTP `TestClient`; lần clone kiểm tra dùng dependencies có sẵn trong môi trường nên chưa xác nhận cài đặt sạch.
 
-**Nghiệm thu bước 10:** nội dung/tài liệu bàn giao và repo hygiene đã được đồng bộ. Bài kiểm tra clone mới là xác nhận cuối sau khi có commit; nếu môi trường không cài được dependency hoặc không có Docker/Kaggle, ghi nhận rõ phần nào được chạy và phần nào cần nghiệm thu ở môi trường tương ứng.
+**Nghiệm thu bước 10:** tài liệu bàn giao, repo hygiene, clone khởi động local, health/Swagger và nhóm test độc lập đã được xác minh. Đóng mục bàn giao hoàn toàn sau khi chạy cài dependencies sạch và full test suite trên máy dev/CI; baseline Kaggle đã có sẵn, không cần chạy lại để dùng làm bằng chứng bước 9.
 
 ## Thứ tự ưu tiên đề xuất
 
