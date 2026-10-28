@@ -5,4 +5,13 @@ __pycache__/
 .pytest_cache/
 .env
 *.db
+*.sqlite
+*.sqlite3
+.coverage
+htmlcov/
 .vscode/
+
+# Ignore generated benchmark runs, but keep the reviewed baseline in Git.
+docs/benchmarks/*/
+!docs/benchmarks/20261028T182659Z-m8jDvhHE/
+!docs/benchmarks/20261028T182659Z-m8jDvhHE/**

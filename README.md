@@ -4,7 +4,7 @@ Backend quản lý bãi đỗ xe theo yêu cầu Pha 1: ghi nhận xe vào, tra 
 
 ## Trạng thái hiện tại
 
-Backend Pha 1 hiện có cấu hình SQLite, model/repository, nghiệp vụ gửi xe/lấy xe, đăng nhập JWT, dependency injection, REST API, cấu hình Docker Compose, Gate client và kịch bản Locust. Các endpoint nghiệp vụ cùng `/health` được khai báo trong ASGI app `business_layer.main:app`; Swagger ở `/docs` và OpenAPI ở `/openapi.json`. Baseline trên Kaggle CPU cần được chạy trong môi trường Kaggle để ghi nhận kết quả phần cứng thực tế.
+Backend Pha 1 hiện có cấu hình SQLite, model/repository, nghiệp vụ gửi xe/lấy xe, đăng nhập JWT, dependency injection, REST API, cấu hình Docker Compose, Gate client và kịch bản Locust. Các endpoint nghiệp vụ cùng `/health` được khai báo trong ASGI app `business_layer.main:app`; Swagger ở `/docs` và OpenAPI ở `/openapi.json`. Baseline Kaggle CPU đầu tiên đã được lưu trong `docs/benchmarks/`; chạy lại benchmark trên Kaggle để tạo kết quả mới cho runtime/phần cứng hiện tại.
 
 ## Cấu trúc hiện tại
 
@@ -24,7 +24,10 @@ parking-management/
 │   ├── locustfile.py
 │   └── kaggle_runner.sh
 ├── tests/                    # Kiểm thử
-├── docs/                     # Quyết định thiết kế
+├── docs/
+│   ├── architecture.md       # Kiến trúc, luồng xử lý, ERD và vận hành offline
+│   ├── specifications/        # Tài liệu yêu cầu gốc của Pha 1
+│   └── benchmarks/           # Baseline Kaggle và hướng dẫn đọc kết quả
 ├── docker-compose.yml
 ├── .dockerignore
 ├── requirements.txt
@@ -141,6 +144,8 @@ Dependencies lần đầu cần tải khi có mạng. Baseline Kaggle CPU thật
 
 ## Đặc tả Phase 1
 
+Hai tài liệu yêu cầu gốc được lưu trong [`docs/specifications/`](docs/specifications/README.md). Kiến trúc, ERD và quyết định triển khai được mô tả tại [`docs/architecture.md`](docs/architecture.md) và [`docs/decisions.md`](docs/decisions.md). Các tài liệu này là căn cứ đối chiếu; README tóm tắt hành vi API đang được triển khai.
+
 - REST API JSON, base path `/api/v1`.
 - `POST /api/v1/auth/login` cấp JWT.
 - `POST /api/v1/parking/entries` ghi nhận xe (yêu cầu xác thực).
@@ -177,4 +182,4 @@ python -m pytest -q
 
 Test API dùng SQLite tạm và bao phủ đăng nhập, xác thực, gửi xe/tra cứu/lấy xe, danh sách phân trang, lỗi validation, OpenAPI và hai request POST đồng thời cùng ticket. Unit test kiểm tra riêng JWT, nghiệp vụ và repository.
 
-Chi tiết yêu cầu bài tập và mapping T01–T14 cần được đối chiếu với tài liệu đặc tả gốc của nhóm; các tài liệu gốc chưa được lưu trong repo.
+Để nghiệm thu từ một clone mới, thực hiện lần lượt: cài Python dependencies, tạo `.env` từ `.env.example`, chạy `python -m pytest -q`, chạy ứng dụng local hoặc Docker Compose, kiểm tra `/health` và `/docs`. Muốn chạy benchmark, cài `requirements-loadtest.txt`, khởi động API và chạy lệnh Kaggle trong phần trên. Bảng mapping yêu cầu T01–T14 được duy trì trong tài liệu đặc tả của nhóm; không dùng số hiệu này làm kết luận nếu chưa đối chiếu bản yêu cầu tương ứng.

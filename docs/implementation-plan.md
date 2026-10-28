@@ -135,14 +135,15 @@ Service thuần Python nằm tại `business_layer/services/parking_service.py`,
 
 ### 10. Đồng bộ tài liệu và chuẩn bị bàn giao
 
-- Cập nhật README với đúng module path, setup, cấu hình, lệnh chạy local/Docker, API và lệnh kiểm thử.
+- [x] Cập nhật README với đúng module path, setup, cấu hình, lệnh chạy local/Docker, API, benchmark và lệnh kiểm thử.
 - [x] README mô tả lỗi `NOT_FOUND`/`METHOD_NOT_ALLOWED`, response login `token_type`/`expires_in`; thống nhất tên thư mục `gate_client/`.
-- Đưa bản mô tả bài toán và đặc tả API vào `docs/` hoặc cung cấp liên kết/tên tệp rõ ràng; không ghi rằng tài liệu tồn tại trong repo nếu chưa thêm.
-- Ghi kiến trúc ba tầng, cách chạy offline, ERD/schema và quyết định thiết kế.
-- Kiểm tra `.gitignore` bỏ qua `.venv/`, `venv/`, `.env`, DB local, cache và artifact benchmark tạm.
-- Kiểm tra Git chỉ chứa source, tài liệu, cấu hình mẫu và dữ liệu benchmark cần thiết; không chứa secret hoặc môi trường ảo.
+- [x] Đưa nguyên bản mô tả bài toán và đặc tả API vào `docs/specifications/`, kèm README mô tả vai trò mỗi tài liệu.
+- [x] Ghi kiến trúc ba tầng, cách chạy offline, ERD/schema và quyết định thiết kế trong `docs/architecture.md` và `docs/decisions.md`.
+- [x] Cập nhật `.gitignore` cho `.venv/`, `venv/`, `.env`, DB local, cache, coverage và benchmark run sinh ra; baseline đã nghiệm thu vẫn được giữ trong Git.
+- [x] Kiểm tra danh sách file theo dõi: không có `.env`, DB local, môi trường ảo hoặc cache; có cấu hình mẫu và benchmark baseline được chọn.
+- [ ] Nghiệm thu clone mới từ commit bàn giao: cài dependencies, tạo `.env`, chạy app, health/Swagger, test và benchmark theo README.
 
-**Nghiệm thu cuối:** clone mới → cài dependencies → cấu hình `.env` → chạy local hoặc Docker → truy cập Swagger → chạy tests → chạy benchmark theo README mà không cần kiến thức ngoài repo.
+**Nghiệm thu bước 10:** nội dung/tài liệu bàn giao và repo hygiene đã được đồng bộ. Bài kiểm tra clone mới là xác nhận cuối sau khi có commit; nếu môi trường không cài được dependency hoặc không có Docker/Kaggle, ghi nhận rõ phần nào được chạy và phần nào cần nghiệm thu ở môi trường tương ứng.
 
 ## Thứ tự ưu tiên đề xuất
 
