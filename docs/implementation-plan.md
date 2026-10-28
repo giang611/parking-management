@@ -129,9 +129,9 @@ Service thuần Python nằm tại `business_layer/services/parking_service.py`,
 - [x] Thêm `requirements-loadtest.txt` tách Locust khỏi image runtime; `locustfile.py` chạy POST → GET → DELETE bằng ticket UUID riêng, xóa record cuối mỗi vòng và làm mới JWT trước khi hết hạn.
 - [x] Hoàn thiện `kaggle_runner.sh` để kiểm tra `/health`, ghi phần cứng/phần mềm/config, throughput, latency, failures, CSV và HTML vào `docs/benchmarks/<run-id>/`.
 - [x] Ghi hướng dẫn cài dependency, chạy Gate client, chuẩn bị Backend/Kaggle secrets và lưu artifact tại README cùng `docs/benchmarks/README.md`.
-- [ ] Cài dependencies và chạy baseline trên Kaggle CPU thật; lưu kết quả benchmark đo được trong `docs/benchmarks/`.
+- [x] Cài dependencies và chạy baseline trên Kaggle CPU thật; lưu toàn bộ artifact vào `docs/benchmarks/20261028T182659Z-m8jDvhHE/`.
 
-**Nghiệm thu:** Gate client có unit tests; Locust workload và runner có hướng dẫn cùng định dạng artifact. Baseline Kaggle vẫn cần chạy trong Kaggle; không ghi số liệu thay thế khi chưa có lần chạy thực.
+**Nghiệm thu:** Gate client unit tests đạt; Kaggle CPU baseline chạy 10 users, spawn rate 2 users/giây trong 60 giây, Locust exit code 0 và 0 failures. Final console ghi 4.918 requests; CSV snapshot và summary ghi 4.868 do Locust cập nhật CSV theo chu kỳ. Cả log cuối và CSV snapshot được giữ để đối chiếu; artifact được lưu cùng repo.
 
 ### 10. Đồng bộ tài liệu và chuẩn bị bàn giao
 

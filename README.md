@@ -137,7 +137,7 @@ BASE_URL=http://127.0.0.1:8000 USERS=10 SPAWN_RATE=2 RUN_TIME=60s \
 
 Runner kiểm tra `/health`, ghi CPU/RAM, Python, Locust, revision và cấu hình tải, rồi lưu CSV, HTML, log cùng bảng throughput/latency/failures vào `docs/benchmarks/<run-id>/`. Có thể đổi `USERS`, `SPAWN_RATE`, `RUN_TIME`, `BASE_URL` và `RESULTS_DIR` qua environment. Giá trị mặc định 10 users, spawn 2 users/giây và 60 giây phù hợp cho baseline ngắn; ghi lại cấu hình khi so sánh các lần chạy. Locust chạy trên cùng Kaggle CPU với API sẽ chia sẻ CPU với Backend, vì vậy ghi chú phần cứng và cách đặt server cùng máy trong báo cáo.
 
-Dependencies lần đầu cần tải khi có mạng. Sau khi đã cài và có thể chạy offline, chạy runner trên Kaggle để tạo kết quả baseline thực tế; hiện repo chưa có số liệu benchmark giả lập.
+Dependencies lần đầu cần tải khi có mạng. Baseline Kaggle CPU thật đầu tiên đã được lưu tại [`docs/benchmarks/20261028T182659Z-m8jDvhHE/`](docs/benchmarks/20261028T182659Z-m8jDvhHE/). Chạy lại runner để tạo thư mục baseline mới; mỗi lượt được cấp thư mục riêng. Locust ghi CSV theo chu kỳ, nên khi kiểm tra số request cuối hãy đối chiếu cả `locust.log` và `locust_stats.csv`.
 
 ## Đặc tả Phase 1
 

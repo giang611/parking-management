@@ -1,0 +1,25 @@
+[2026-10-28 18:27:04,459] 63fb26c2de99/INFO/locust.main: Starting Locust 2.47.0
+[2026-10-28 18:27:04,460] 63fb26c2de99/INFO/locust.main: Run time limit set to 60 seconds
+[2026-10-28 18:27:04,461] 63fb26c2de99/INFO/locust.runners: Ramping to 10 users at a rate of 2.00 per second
+[2026-10-28 18:27:08,468] 63fb26c2de99/INFO/locust.runners: All users spawned: {"GateParkingUser": 10} (10 total users)
+[2026-10-28 18:28:04,159] 63fb26c2de99/INFO/locust.main: --run-time limit reached, shutting down
+[2026-10-28 18:28:04,287] 63fb26c2de99/INFO/locust.main: Shutting down (exit code 0)
+Type     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
+--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+DELETE   DELETE /api/v1/parking/entries/{ticket}                                         1636     0(0.00%) |     19       4     240     14 |   27.39        0.00
+GET      GET /api/v1/parking/entries/{ticket}                                            1636     0(0.00%) |     10       3     234      6 |   27.39        0.00
+POST     POST /api/v1/auth/login                                                           10     0(0.00%) |    350     343     360    350 |    0.17        0.00
+POST     POST /api/v1/parking/entries                                                    1636     0(0.00%) |     19       9     245     14 |   27.39        0.00
+--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+         Aggregated                                                                      4918     0(0.00%) |     17       3     360     13 |   82.32        0.00
+
+Response time percentiles (approximated)
+Type     Name                                                                                  50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
+--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+DELETE   DELETE /api/v1/parking/entries/{ticket}                                                14     18     22     27     40     63     90    110    200    240    240   1636
+GET      GET /api/v1/parking/entries/{ticket}                                                    6     11     14     15     18     26     40     46    190    230    230   1636
+POST     POST /api/v1/auth/login                                                               350    350    360    360    360    360    360    360    360    360    360     10
+POST     POST /api/v1/parking/entries                                                           14     16     20     22     31     47     72    100    190    250    250   1636
+--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+         Aggregated                                                                             13     15     18     21     30     46     74    100    350    360    360   4918
+
