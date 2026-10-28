@@ -7,7 +7,7 @@ USERS="${USERS:-10}"
 SPAWN_RATE="${SPAWN_RATE:-2}"
 RUN_TIME="${RUN_TIME:-60s}"
 RESULTS_ROOT="${RESULTS_DIR:-$PROJECT_ROOT/docs/benchmarks}"
-RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
+RUN_TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 
 : "${ADMIN_USERNAME:?Set ADMIN_USERNAME in the Kaggle environment.}"
 : "${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in the Kaggle environment.}"
@@ -31,8 +31,9 @@ PY
 if [[ "$RESULTS_ROOT" != /* ]]; then
     RESULTS_ROOT="$PROJECT_ROOT/$RESULTS_ROOT"
 fi
-RUN_DIR="$RESULTS_ROOT/$RUN_ID"
-mkdir -p "$RUN_DIR"
+mkdir -p "$RESULTS_ROOT"
+RUN_DIR="$(mktemp -d "$RESULTS_ROOT/${RUN_TIMESTAMP}-XXXXXXXX")"
+RUN_ID="${RUN_DIR##*/}"
 
 python - "$BASE_URL" <<'PY'
 import json
