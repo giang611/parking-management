@@ -7,7 +7,8 @@ import random
 import time
 from uuid import uuid4
 
-from locust import HttpUser, StopUser, between, task
+from locust import HttpUser, between, task
+from locust.exception import StopTest
 
 
 class GateParkingUser(HttpUser):
@@ -19,7 +20,7 @@ class GateParkingUser(HttpUser):
         self.username = os.getenv("ADMIN_USERNAME", "")
         self.password = os.getenv("ADMIN_PASSWORD", "")
         if not self.username or not self.password:
-            raise StopUser("Set ADMIN_USERNAME and ADMIN_PASSWORD before starting Locust.")
+            raise StopTest("Set ADMIN_USERNAME and ADMIN_PASSWORD before starting Locust.")
         self.token: str | None = None
         self.token_expiry_seconds = 3600
         self.token_created_at = 0.0
@@ -34,14 +35,14 @@ class GateParkingUser(HttpUser):
         ) as response:
             if response.status_code != 200:
                 response.failure(f"login returned HTTP {response.status_code}")
-                raise StopUser("Gate login failed; check test credentials.")
+                raise StopTest("Gate login failed; check test credentials.")
             try:
                 body = response.json()
                 self.token = body["access_token"]
                 self.token_expiry_seconds = int(body["expires_in"])
             except (KeyError, TypeError, ValueError):
                 response.failure("login response did not contain a valid token")
-                raise StopUser("Gate login returned an invalid response.") from None
+                raise StopTest("Gate login returned an invalid response.") from None
             response.success()
         self.token_created_at = time.monotonic()
 
