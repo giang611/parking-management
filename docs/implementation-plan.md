@@ -143,9 +143,9 @@ Service thuần Python nằm tại `business_layer/services/parking_service.py`,
 - [x] Kiểm tra danh sách file theo dõi: không có `.env`, DB local, môi trường ảo hoặc cache; có cấu hình mẫu và benchmark baseline được chọn.
 - [x] Clone commit bàn giao `700f114`, tạo `.env` từ mẫu, chạy API; `/health` trả `ok`, `/docs` trả HTTP 200.
 - [x] Chạy nhóm test độc lập trên clone: 41 passed; baseline Kaggle đã nghiệm thu ở bước 9 và được giữ làm artifact repo.
-- [ ] Cài dependencies hoàn toàn mới và chạy đủ `python -m pytest -q` trên máy dev/CI. Codex sandbox treo ở các test HTTP `TestClient`; lần clone kiểm tra dùng dependencies có sẵn trong môi trường nên chưa xác nhận cài đặt sạch.
+- [x] Trên máy dev Windows với Python 3.12.7, tạo virtualenv mới, cài toàn bộ `requirements.txt`, chạy `pip check` và `python -m pytest -q`: 75 passed, 1 cảnh báo deprecation trong 12 giây.
 
-**Nghiệm thu bước 10:** tài liệu bàn giao, repo hygiene, clone khởi động local, health/Swagger và nhóm test độc lập đã được xác minh. Đóng mục bàn giao hoàn toàn sau khi chạy cài dependencies sạch và full test suite trên máy dev/CI; baseline Kaggle đã có sẵn, không cần chạy lại để dùng làm bằng chứng bước 9.
+**Nghiệm thu bước 10:** tài liệu bàn giao, repo hygiene, clone khởi động local, health/Swagger, cài dependencies sạch và full test suite đều đã được xác minh. Codex sandbox vẫn có giới hạn với một số test HTTP `TestClient`, nhưng máy dev đã chạy trọn bộ thành công; baseline Kaggle đã có sẵn từ bước 9.
 
 ## Thứ tự ưu tiên đề xuất
 
