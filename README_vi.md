@@ -1,6 +1,6 @@
 # Hệ thống quản lý bãi đỗ xe
 
-Dự án Python mô phỏng hệ thống quản lý bãi đỗ xe, hỗ trợ ghi nhận xe vào bãi, tra cứu phí, xác nhận thanh toán và thống kê doanh thu. Các thành phần giao tiếp qua giao thức TCP tự định nghĩa, sử dụng thông điệp văn bản theo từng dòng; giao thức không phải HTTP/REST.
+Dự án Python mô phỏng hệ thống quản lý bãi đỗ xe, hỗ trợ ghi nhận xe vào bãi, tra cứu phí, xác nhận thanh toán và thống kê doanh thu. Các thành phần giao tiếp qua giao thức TCP tự định nghĩa, sử dụng thông điệp văn bản theo từng dòng; giao thức tuân theo REST nhưng không phải HTTP.
 
 ## 1. Kiến trúc dự án
 
