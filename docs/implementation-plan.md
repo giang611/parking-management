@@ -135,8 +135,8 @@ Service thuần Python nằm tại `business_layer/services/parking_service.py`,
 
 ### 10. Đồng bộ tài liệu và chuẩn bị bàn giao
 
-- [x] Cập nhật README với đúng module path, setup, cấu hình, lệnh chạy local/Docker, API, benchmark và lệnh kiểm thử.
-- [x] README mô tả lỗi `NOT_FOUND`/`METHOD_NOT_ALLOWED`, response login `token_type`/`expires_in`; thống nhất tên thư mục `gate_client/`.
+- [x] Rút README thành bản giới thiệu bài toán/nghiệp vụ/kiến trúc/API; chuyển hướng dẫn chi tiết cài đặt, Docker, Gate client và benchmark sang `docs/developer-guide.md`.
+- [x] Sinh đặc tả OpenAPI JSON tại `docs/openapi.json` và thêm script xuất lại từ code sau khi thay đổi API.
 - [x] Đưa nguyên bản mô tả bài toán và đặc tả API vào `docs/specifications/`, kèm README mô tả vai trò mỗi tài liệu.
 - [x] Ghi kiến trúc ba tầng, cách chạy offline, ERD/schema và quyết định thiết kế trong `docs/architecture.md` và `docs/decisions.md`.
 - [x] Cập nhật `.gitignore` cho `.venv/`, `venv/`, `.env`, DB local, cache, coverage và benchmark run sinh ra; baseline đã nghiệm thu vẫn được giữ trong Git.

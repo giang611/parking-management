@@ -38,6 +38,7 @@ API nhận HTTP, xác thực Bearer token và chuyển dữ liệu sang service.
 | `gate_client/gate_simulation.py` | Client dòng lệnh tương tác để đăng nhập, gửi xe, tra cứu và lấy xe qua HTTP. |
 | `loadtest/locustfile.py` | Mô phỏng người dùng gửi, tra cứu rồi lấy xe trong vòng lặp tải. |
 | `loadtest/kaggle_runner.sh` | Kiểm tra Backend, chạy Locust và lưu cấu hình cùng báo cáo benchmark. |
+| `scripts/export_openapi.py` | Sinh tệp OpenAPI JSON để preview và review API trên GitHub. |
 | `tests/` | Kiểm tra hợp đồng API, quy tắc nghiệp vụ, repository, xác thực và công cụ benchmark. |
 | `docs/` | Lưu đặc tả gốc, quyết định, tài liệu luồng/module và baseline benchmark. |
 
