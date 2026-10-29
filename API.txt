@@ -20,7 +20,7 @@ Business module
 	Tới gate PC
 		Trả lời POST/auth:
 			204/{}\n: Đúng
-			401/{}\n: Sai
+			401/{error}\n: Sai
 		Nếu đã đăng nhập
 			Trả lời POST/vehicle: 
 				204/{}\n
