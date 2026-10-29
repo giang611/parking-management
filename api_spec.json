@@ -1,0 +1,84 @@
+{
+  "name": "Parking TCP API",
+  "version": "1.0",
+  "transport": {
+    "protocol": "TCP",
+    "encoding": "UTF-8",
+    "framing": "One request per line, terminated by LF; server returns one response line per request.",
+    "request_format": "METHOD/resource/payload/auth/password",
+    "response_format": "STATUS/JSON",
+    "success_without_data": "204/{}",
+    "notes": [
+      "This is a custom TCP text protocol, not HTTP or actual REST.",
+      "Except POST/auth, every request must include /auth/{password}.",
+      "Payloads containing objects are compact JSON with no literal line breaks."
+    ]
+  },
+  "enums": {
+    "vehicle_type": ["CAR", "MOTORCYCLE", "BICYCLE"],
+    "revenue_period": ["today", "yesterday", "this-week", "last-week", "this-month", "last-month"]
+  },
+  "endpoints": [
+    {
+      "operation": "Check password",
+      "purpose": "Checks the password only; does not create a session.",
+      "request": "POST/auth/{password}",
+      "example": "POST/auth/123",
+      "success": "204/{}",
+      "failure": "401/{\"error\":\"invalid password\"}"
+    },
+    {
+      "operation": "Park vehicle",
+      "purpose": "Registers a vehicle as currently parked.",
+      "request": "POST/vehicle/{vehicle_json}/auth/{password}",
+      "payload": {"ticket": "positive integer", "plate": "string for CAR/MOTORCYCLE; null or empty for BICYCLE", "type": "vehicle_type"},
+      "example": "POST/vehicle/{\"ticket\":1001,\"plate\":\"30A-12345\",\"type\":\"CAR\"}/auth/123",
+      "success": "204/{}"
+    },
+    {
+      "operation": "Quote parking fee",
+      "purpose": "Finds the active vehicle and calculates its current fee. Read-only: does not collect payment, remove the vehicle, or add revenue.",
+      "request": "GET/vehicle/{vehicle_json}/auth/{password}",
+      "payload": {"ticket": "positive integer", "plate": "same plate stored for vehicle; null or empty for BICYCLE", "type": "vehicle_type"},
+      "example": "GET/vehicle/{\"ticket\":1001,\"plate\":\"30A-12345\",\"type\":\"CAR\"}/auth/123",
+      "success": "200/{\"ticket\":1001,\"hours\":2,\"charge\":20000,\"currency\":\"VND\"}",
+      "response_fields": {"ticket": "integer", "hours": "billed hours, minimum 1", "charge": "amount due, integer", "currency": "VND"}
+    },
+    {
+      "operation": "Confirm payment and exit",
+      "purpose": "Recalculates the fee on the server, records payment, and removes the active vehicle atomically. Call only after payment is confirmed; do not send a client-calculated amount.",
+      "request": "DELETE/vehicle/{vehicle_json}/auth/{password}",
+      "payload": {"ticket": "positive integer", "plate": "same plate stored for vehicle; null or empty for BICYCLE", "type": "vehicle_type"},
+      "example": "DELETE/vehicle/{\"ticket\":1001,\"plate\":\"30A-12345\",\"type\":\"CAR\"}/auth/123",
+      "success": "204/{}"
+    },
+    {
+      "operation": "View revenue",
+      "purpose": "Returns total recorded payment revenue for the selected period, using Vietnam time.",
+      "request": "GET/revenue/{revenue_period}/auth/{password}",
+      "example": "GET/revenue/today/auth/123",
+      "success": "200/{\"revenue\":20000,\"currency\":\"VND\"}",
+      "response_fields": {"revenue": "total amount, integer", "currency": "VND"}
+    }
+  ],
+  "business_rules": {
+    "plate": "CAR and MOTORCYCLE require a non-empty plate; BICYCLE must not have a plate.",
+    "duplicate_ticket": "An already-active ticket cannot be parked again.",
+    "fee_formula": "max(1, ceil(elapsed_seconds / 3600)) * rate_per_hour",
+    "rates_per_hour_vnd": "View the config.json for detail",
+    "authentication": "Password is checked independently on every request; no session is created.",
+    "default_password": "123",
+    "default_server": {"host": "0.0.0.0", "port": 8765}
+  },
+  "status_codes": {
+    "200": "Query succeeded; JSON contains result data.",
+    "204": "Operation succeeded; response body is {}.",
+    "400": "Malformed request or JSON, invalid vehicle type/period, or unknown operation.",
+    "401": "Missing or incorrect password.",
+    "404": "Vehicle not found or ticket/plate/type does not match.",
+    "409": "Ticket is already active.",
+    "422": "Plate rule violated.",
+    "500": "Unexpected server error."
+  },
+  "error_format": "STATUS/{\"error\":\"description\"}"
+}

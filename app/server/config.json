@@ -1,0 +1,12 @@
+{
+  "password": "123",
+  "host": "0.0.0.0",
+  "port": 8765,
+  "currency": "VND",
+  "rates_per_hour": {
+    "CAR": 10000,
+    "MOTORCYCLE": 5000,
+    "BICYCLE": 2000
+  },
+  "database": "vehicle.db"
+}

@@ -1,0 +1,42 @@
+Gate PC
+	Có nhiệm vụ đọc biển số, phát/check+thu vé của xe ra vào và gửi request cho business layer và đọc response báo cho giữ xe, request báo cáo doanh thu
+		POST/auth/"{auth}"\n: Kiểm tra mk đúng chx
+		POST/vehicle/"{ticket, plate, type}/auth/"{auth}"\n : Gửi xe
+		GET/vehicle/"{ticket, plate, type}"/auth/"{auth}"\n : Lấy xe
+        DELETE/vehicle/"{ticket}"/auth/"{auth}"\n : Xóa xe đã thanh toán	
+		GET/revenue/"{period}"/auth/"{auth}"\n : Xem lợi nhuận
+	Type chỉ có thể là ô tô, xe máy, xe đạp
+
+Business module
+	Nhiệm vụ đảm bảo tính đúng đắn của request từ gate PC
+		-Bất kể request nào nếu password không đúng đều 401
+		-Nếu request ko đúng format trả 400
+		-Nếu type ko nằm trong 3 loại trên trả 400
+		-Nếu type xe đạp mà có biển hoặc type xe ô tô, xe máy ko có biển trả 422	
+		-Nếu POST 1 ticket đã có trong bãi trả 409
+		-Nếu POST thành công gửi 204		
+		-Nếu GET mà ticket/biển ko có trong bãi/ko khớp gửi 404
+		-Nếu GET thành công gửi 200 để thanh toán		
+	Tới gate PC
+		Trả lời POST/auth:
+			204/{}\n: Đúng
+			401/{}\n: Sai
+		Nếu đã đăng nhập
+			Trả lời POST/vehicle: 
+				204/{}\n
+				400/{error}\n
+				409/{error}\n
+				422/{error}\n
+			Trả lời GET/vehicle: 
+				200/"{charge}"\n: Tiền lấy xe
+				400/{error}\n
+				404/{error}\n
+				422/{error}\n
+			Trả lời DELETE/vehicle:
+				204/{}\n
+				400/{error}\n
+				404/{error}\n
+				422/{error}\n			
+			Trả lời GET/revenue:
+				200/"{revenue, currency}"\n
+	
