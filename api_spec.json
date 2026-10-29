@@ -9,8 +9,7 @@
     "response_format": "STATUS/JSON",
     "success_without_data": "204/{}",
     "notes": [
-      "This is a custom TCP text protocol, not HTTP or actual REST.",
-      "Except POST/auth, every request must include /auth/{password}.",
+      "This is a custom REST compliant TCP text protocol, not HTTP.",
       "Payloads containing objects are compact JSON with no literal line breaks."
     ]
   },
