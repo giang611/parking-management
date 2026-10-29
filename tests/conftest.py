@@ -50,7 +50,7 @@ def api_env(monkeypatch: pytest.MonkeyPatch) -> Generator[TestClient, None, None
     )
     client = TestClient(app, raise_server_exceptions=False)
     try:
-        # Avoid TestClient's context manager so tests do not mutate the local default DB via lifespan.
+        # Không dùng context manager của TestClient để lifespan không tác động DB local mặc định.
         yield client
     finally:
         client.close()

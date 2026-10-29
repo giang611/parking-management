@@ -1,4 +1,4 @@
-"""Persisted vehicle currently parked in the lot."""
+"""Model lượt xe hiện đang được gửi trong bãi."""
 
 from datetime import datetime
 

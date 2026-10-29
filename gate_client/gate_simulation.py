@@ -1,4 +1,4 @@
-"""Interactive Gate PC simulator for the parking-management API."""
+"""Chương trình tương tác mô phỏng máy Gate gọi API quản lý bãi xe."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from urllib.request import Request, urlopen
 
 
 class GateApiError(Exception):
-    """An API response containing an HTTP status and stable error code."""
+    """Lỗi API gồm mã HTTP và mã lỗi ổn định."""
 
     def __init__(self, status_code: int, code: str):
         self.status_code = status_code
@@ -22,7 +22,7 @@ class GateApiError(Exception):
 
 
 class GateApiClient:
-    """Small standard-library client used by the interactive gate simulator."""
+    """HTTP client gọn, chỉ dùng thư viện chuẩn, cho chương trình mô phỏng Gate."""
 
     def __init__(self, base_url: str, timeout: float = 10.0):
         self.base_url = base_url.rstrip("/")
@@ -169,7 +169,7 @@ def main() -> int:
     parser.add_argument(
         "--base-url",
         default=os.getenv("BASE_URL", "http://127.0.0.1:8000"),
-        help="Backend URL (default: BASE_URL or http://127.0.0.1:8000)",
+        help="Địa chỉ Backend (mặc định: BASE_URL hoặc http://127.0.0.1:8000)",
     )
     args = parser.parse_args()
     return run_interactive(args.base_url)

@@ -1,4 +1,4 @@
-"""Pydantic schemas for authentication endpoints."""
+"""Schema Pydantic cho request và response xác thực."""
 
 from pydantic import BaseModel, ConfigDict, Field
 

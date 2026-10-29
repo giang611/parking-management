@@ -1,4 +1,4 @@
-"""SQLAlchemy implementation of the user repository port."""
+"""Repository SQLAlchemy triển khai giao diện truy cập tài khoản."""
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session

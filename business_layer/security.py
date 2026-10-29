@@ -1,4 +1,4 @@
-"""FastAPI security dependency — verifies Bearer JWT before any handler runs."""
+"""Dependency xác thực Bearer JWT dùng chung cho các router cần bảo vệ."""
 
 from fastapi import Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -10,15 +10,15 @@ from business_layer.services.exceptions import BusinessError
 
 _bearer_scheme = HTTPBearer(auto_error=False)
 
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Security(_bearer_scheme),
 ) -> str:
-    """Decode and validate a Bearer JWT.
+    """Giải mã JWT và trả về tên tài khoản trong claim ``sub``.
 
-    Returns the ``sub`` claim (username) when valid.
-    Raises a domain UNAUTHORIZED error for missing, malformed, or expired tokens.
-    This must be declared as a ``Security()`` dependency so FastAPI runs it
-    *before* validating the request body, ensuring auth errors surface first.
+    Ném lỗi nghiệp vụ ``UNAUTHORIZED`` khi thiếu token, token sai định dạng,
+    hết hạn hoặc không có claim ``sub`` hợp lệ. Khai báo đây là dependency
+    ``Security`` để FastAPI xác thực trước khi kiểm tra phần thân request.
     """
     if credentials is None:
         raise BusinessError("UNAUTHORIZED")

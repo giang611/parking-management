@@ -1,4 +1,4 @@
-"""Authentication endpoints."""
+"""Các endpoint xác thực tài khoản."""
 
 from fastapi import APIRouter, Depends
 
@@ -17,10 +17,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
     responses={401: {"model": ErrorResponse, "description": "INVALID_CREDENTIALS"}},
 )
 def login(body: LoginRequest, service: AuthService = Depends(get_auth_service)) -> TokenResponse:
-    """Issue a JWT access token for valid credentials.
+    """Cấp JWT truy cập khi thông tin đăng nhập hợp lệ.
 
-    Returns 401 with ``{"error": "INVALID_CREDENTIALS"}`` when username or
-    password is wrong.
+    Trả HTTP 401 cùng ``{"error": "INVALID_CREDENTIALS"}`` nếu tên đăng nhập
+    hoặc mật khẩu không chính xác.
     """
     token = service.login(body.username, body.password)
     return TokenResponse(access_token=token, expires_in=settings.jwt_expire_seconds)

@@ -1,4 +1,4 @@
-"""Pure Python authentication service — no FastAPI or SQLAlchemy dependency."""
+"""Service xác thực Python thuần, không phụ thuộc FastAPI hoặc SQLAlchemy."""
 
 from datetime import datetime, timezone, timedelta
 
@@ -11,7 +11,7 @@ from business_layer.services.repository_ports import UserRepositoryPort
 
 
 class AuthService:
-    """Verifies credentials and issues JWT tokens."""
+    """Kiểm tra thông tin đăng nhập và cấp JWT."""
 
     def __init__(
         self,
@@ -20,10 +20,10 @@ class AuthService:
         self._users = users
 
     def login(self, username: str, password: str) -> str:
-        """Authenticate username/password and return a signed JWT.
+        """Xác thực tên đăng nhập/mật khẩu và trả về JWT đã ký.
 
-        Raises:
-            BusinessError("INVALID_CREDENTIALS"): if username unknown or password wrong.
+        Ném ``BusinessError("INVALID_CREDENTIALS")`` nếu tài khoản không tồn tại
+        hoặc mật khẩu không chính xác.
         """
         credentials = self._users.get_by_username(username)
         if credentials is None:

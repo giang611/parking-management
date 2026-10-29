@@ -1,4 +1,4 @@
-"""Persisted operator account."""
+"""Model tài khoản nhân viên được lưu trong cơ sở dữ liệu."""
 
 from sqlalchemy import CheckConstraint, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column

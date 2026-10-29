@@ -10,20 +10,20 @@ Backend Pha 1 hiện có cấu hình SQLite, model/repository, nghiệp vụ g�
 
 ```text
 parking-management/
-├── business_layer/           # Package API, middleware, service và điểm khởi động
+├── business_layer/           # API, xác thực, nghiệp vụ và điểm khởi động
 │   ├── api/
-│   ├── middleware/
+│   ├── security.py
 │   ├── schemas/
 │   ├── services/
 │   ├── Dockerfile
 │   └── main.py
 ├── database_persistent/      # Package cấu hình DB, ORM models, repositories, seed
-├── gate_client/              # Mô phỏng Gate PC
+├── gate_client/              # Client dòng lệnh mô phỏng Gate PC
 │   └── gate_simulation.py
 ├── loadtest/                 # Locust và runner cho Kaggle CPU
 │   ├── locustfile.py
 │   └── kaggle_runner.sh
-├── tests/                    # Kiểm thử
+├── tests/                    # Kiểm thử tự động
 ├── docs/
 │   ├── architecture.md       # Kiến trúc, luồng xử lý, ERD và vận hành offline
 │   ├── specifications/        # Tài liệu yêu cầu gốc của Pha 1
@@ -37,6 +37,8 @@ parking-management/
 ```
 
 Kiến trúc mục tiêu: `business_layer/api` → `business_layer/services` → `database_persistent/repositories`. Hai tầng dữ liệu và nghiệp vụ là package Python hợp lệ, có `__init__.py`; service nghiệp vụ không phụ thuộc framework web hoặc thư viện cơ sở dữ liệu. `gate_client/` là client mô phỏng riêng, không phải package backend.
+
+Tài liệu [luồng hoạt động và ý nghĩa từng module](docs/architecture.md) mô tả đường đi của request, vai trò các thư mục Python và quan hệ giữa chúng.
 
 ## Yêu cầu môi trường
 

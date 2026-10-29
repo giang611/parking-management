@@ -1,4 +1,4 @@
-"""FastAPI dependency providers that wire database sessions to repository adapters."""
+"""Cung cấp dependency FastAPI để nối phiên DB với repository và service."""
 
 from collections.abc import Generator
 
@@ -14,7 +14,7 @@ from business_layer.services.parking_service import ParkingService
 
 
 def get_db() -> Generator[Session, None, None]:
-    """Yield a transactional SQLAlchemy session; commit on success, rollback on error."""
+    """Cấp phiên SQLAlchemy theo transaction; commit khi thành công, rollback khi lỗi."""
     with SessionLocal.begin() as session:
         yield session
 

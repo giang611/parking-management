@@ -1,4 +1,4 @@
-"""SQLAlchemy ORM models."""
+"""Các model ORM SQLAlchemy của hệ thống."""
 
 from database_persistent.models.user import User
 from database_persistent.models.vehicle import ParkedVehicle

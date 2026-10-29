@@ -1,4 +1,4 @@
-"""Initialize the local schema and create the configured operator if absent."""
+"""Khởi tạo schema local và tạo tài khoản quản trị nếu chưa có."""
 
 import bcrypt
 from sqlalchemy import select
@@ -9,7 +9,7 @@ from database_persistent.models import User
 
 
 def initialize_database() -> None:
-    """Create tables and seed the initial admin account idempotently."""
+    """Tạo bảng và thêm tài khoản quản trị ban đầu theo cách an toàn khi chạy lại."""
 
     create_schema()
     with SessionLocal.begin() as session:

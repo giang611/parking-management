@@ -1,4 +1,4 @@
-"""ASGI application bootstrap — wires routers and exception handlers."""
+"""Khởi tạo ứng dụng ASGI, gắn router và bộ xử lý ngoại lệ."""
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -16,7 +16,7 @@ HTTP_ERRORS = {404: "NOT_FOUND", 405: "METHOD_NOT_ALLOWED"}
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    """Create tables and seed the initial admin account before serving requests."""
+    """Tạo bảng và tài khoản quản trị ban đầu trước khi nhận request."""
     initialize_database()
     yield
 
@@ -28,7 +28,7 @@ app = FastAPI(
 )
 
 
-# ── Exception handlers ────────────────────────────────────────────────────────
+# ── Bộ xử lý ngoại lệ ─────────────────────────────────────────────────────────
 
 @app.exception_handler(BusinessError)
 async def business_error_handler(_: Request, exc: BusinessError) -> JSONResponse:
@@ -51,9 +51,9 @@ async def http_error_handler(
     )
 
 
-# ── Routers ───────────────────────────────────────────────────────────────────
+# ── Các router ────────────────────────────────────────────────────────────────
 
-from business_layer.api import auth_router, health_router, parking_router  # noqa: E402
+from business_layer.api import auth_router, health_router, parking_router  # noqa: E402  # Import sau khi khởi tạo app và bộ xử lý ngoại lệ.
 
 app.include_router(health_router.router)
 app.include_router(auth_router.router, prefix="/api/v1")

@@ -5,7 +5,7 @@ import jwt
 import pytest
 
 from business_layer.config import settings
-from business_layer.middleware.auth_middleware import get_current_user
+from business_layer.security import get_current_user
 from business_layer.services.auth_service import AuthService
 from business_layer.services.exceptions import BusinessError
 from business_layer.services.repository_ports import UserCredentials

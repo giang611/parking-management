@@ -1,4 +1,4 @@
-"""Pure Python parking workflows backed by a repository port."""
+"""Các luồng gửi xe thuần Python dựa trên giao diện repository."""
 
 from datetime import datetime, timezone
 from typing import Callable, Mapping

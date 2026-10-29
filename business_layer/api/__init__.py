@@ -1,1 +1,1 @@
-"""REST API routers and request handlers."""
+"""Các router REST API và hàm xử lý request."""

@@ -1,1 +1,1 @@
-"""Repository implementations for persistence."""
+"""Các repository triển khai việc truy cập dữ liệu."""

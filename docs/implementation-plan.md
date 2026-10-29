@@ -15,11 +15,11 @@ Tài liệu này chuyển yêu cầu trong mô tả bài toán, đặc tả API 
 
 ### 1. Chốt cấu trúc module và quy tắc phụ thuộc — Hoàn tất phần package; chờ xác minh phụ thuộc
 
-- [x] Giữ API, middleware, schemas và điểm khởi động trong package `business_layer/`.
+- [x] Giữ API, security dependency, schemas và điểm khởi động trong package `business_layer/`.
 - [x] Giữ business services và domain exceptions trong `business_layer/services/`.
 - [x] Giữ cấu hình DB, ORM models, repositories và seed tài khoản trong package `database_persistent/`.
 - [x] Dùng tên package Python hợp lệ, chữ thường và dấu gạch dưới; không import từ tên thư mục cũ chứa dấu `+` hoặc dấu cách. Package backend được đặt `business_layer/` để tránh xung đột hoa/thường với đường dẫn Git cũ `Business/` trên Windows.
-- [x]Đã thêm `__init__.py` để khai báo các package `business_layer`, các subpackage API/middleware/schemas/services và `database_persistent` cùng models/repositories.
+- [x]Đã thêm `__init__.py` để khai báo các package `business_layer`, các subpackage API/schemas/services và `database_persistent` cùng models/repositories.
 - [x]Đã cập nhật test khói sang `business_layer.main` và đường dẫn kiểm tra tầng service sang `business_layer/services`.
 - [x]Quy tắc đã chốt: service chỉ phụ thuộc interface/port của repository; test kiến trúc kiểm tra service không import FastAPI, SQLAlchemy hoặc driver DB.
 - [x]README và kế hoạch này đã được cập nhật theo module path mới.
@@ -69,7 +69,7 @@ Service thuần Python nằm tại `business_layer/services/parking_service.py`,
 
 **Nghiệm thu bước 4 lúc hoàn tất:** `pytest tests/test_business_rules.py -q`: 18 passed; suite lúc đó: 28 passed, 1 deselected vì test health bị treo trong asyncio sandbox Windows. Test tổng hợp mới nhất được ghi tại bước 7.
 
-### 5. Đăng nhập và middleware JWT
+### 5. Đăng nhập và dependency xác thực JWT
 
 - [x] Login kiểm tra username/password bcrypt và trả JWT HS256 gồm `sub`, `iat`, `exp`.
 - [x] Verify token offline bằng secret cấu hình; không phụ thuộc dịch vụ Internet/OAuth.

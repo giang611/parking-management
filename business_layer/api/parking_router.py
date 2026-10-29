@@ -1,9 +1,9 @@
-"""Parking entry endpoints — all protected by JWT authentication."""
+"""Các endpoint quản lý lượt gửi xe; mọi endpoint đều yêu cầu JWT."""
 
 from fastapi import APIRouter, Depends, Query, Security, Response
 
 from business_layer.dependencies import get_parking_service
-from business_layer.middleware.auth_middleware import get_current_user
+from business_layer.security import get_current_user
 from business_layer.schemas.parking_schemas import (
     ErrorResponse,
     ParkEntryPageResponse,
@@ -39,13 +39,13 @@ def _build_park_payload(body: ParkEntryRequest) -> dict[str, object]:
     status_code=204,
     response_class=Response,
     responses={409: {"model": ErrorResponse, "description": "TICKET_IN_USE"}},
-    summary="Record a vehicle entering the parking lot",
+    summary="Ghi nhận xe vào bãi",
 )
 def park_vehicle(
     body: ParkEntryRequest,
     service: ParkingService = Depends(get_parking_service),
 ) -> Response:
-    """Park a vehicle. Returns 204 No Content on success."""
+    """Ghi nhận xe vào bãi; trả HTTP 204 khi thành công."""
     service.park(_build_park_payload(body))
 
     return Response(status_code=204)
@@ -54,14 +54,14 @@ def park_vehicle(
 @router.get(
     "/entries",
     response_model=ParkEntryPageResponse,
-    summary="List parked vehicles with pagination",
+    summary="Liệt kê xe đang gửi theo trang",
 )
 def list_parked_vehicles(
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
     service: ParkingService = Depends(get_parking_service),
 ) -> ParkEntryPageResponse:
-    """Return a stable, ticket-sorted page of currently parked vehicles."""
+    """Trả một trang xe đang gửi, sắp xếp ổn định theo mã vé."""
     records, total = service.list_parked(limit, offset)
     return ParkEntryPageResponse(
         items=[
@@ -83,7 +83,7 @@ def list_parked_vehicles(
     "/entries/{ticket}",
     response_model=ParkEntryResponse,
     responses={404: {"model": ErrorResponse, "description": "VEHICLE_NOT_FOUND"}},
-    summary="Look up a parked vehicle without removing it",
+    summary="Tra cứu xe đang gửi mà không xóa lượt gửi",
 )
 def lookup_vehicle(
     ticket: str,
@@ -91,7 +91,7 @@ def lookup_vehicle(
     plate: str | None = Query(default=None),
     service: ParkingService = Depends(get_parking_service),
 ) -> ParkEntryResponse:
-    """Return the parking record for the given ticket without modifying state."""
+    """Trả thông tin lượt gửi theo vé và không làm thay đổi dữ liệu."""
     query: dict = {"type": type}
     if plate is not None:
         query["plate"] = plate
@@ -111,7 +111,7 @@ def lookup_vehicle(
     status_code=200,
     response_model=RetrieveEntryResponse,
     responses={404: {"model": ErrorResponse, "description": "VEHICLE_NOT_FOUND"}},
-    summary="Retrieve a vehicle and remove its parking record",
+    summary="Lấy xe ra và xóa lượt gửi tương ứng",
 )
 def retrieve_vehicle(
     ticket: str,
@@ -119,7 +119,7 @@ def retrieve_vehicle(
     plate: str | None = Query(default=None),
     service: ParkingService = Depends(get_parking_service),
 ) -> RetrieveEntryResponse:
-    """Verify the ticket/plate/type triple, delete it and return its ticket."""
+    """Đối chiếu vé/biển số/loại xe, xóa lượt gửi và trả mã vé."""
     query: dict = {"type": type}
     if plate is not None:
         query["plate"] = plate

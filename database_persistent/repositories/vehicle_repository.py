@@ -1,4 +1,4 @@
-"""SQLAlchemy implementation of the parked-vehicle repository port."""
+"""Repository SQLAlchemy triển khai giao diện truy cập lượt gửi xe."""
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError

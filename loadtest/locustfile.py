@@ -1,4 +1,4 @@
-"""Locust workload: authenticate, park, look up, then retrieve each vehicle."""
+"""Kịch bản Locust: đăng nhập, gửi xe, tra cứu rồi lấy xe ra."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from locust.exception import StopTest
 
 
 class GateParkingUser(HttpUser):
-    """A simulated gate that completes one vehicle's full parking round trip."""
+    """Một cổng mô phỏng hoàn tất vòng đời gửi và lấy xe."""
 
     wait_time = between(0.1, 0.5)
 
@@ -20,7 +20,7 @@ class GateParkingUser(HttpUser):
         self.username = os.getenv("ADMIN_USERNAME", "")
         self.password = os.getenv("ADMIN_PASSWORD", "")
         if not self.username or not self.password:
-            raise StopTest("Set ADMIN_USERNAME and ADMIN_PASSWORD before starting Locust.")
+            raise StopTest("Hãy cấu hình ADMIN_USERNAME và ADMIN_PASSWORD trước khi chạy Locust.")
         self.token: str | None = None
         self.token_expiry_seconds = 3600
         self.token_created_at = 0.0
@@ -35,14 +35,14 @@ class GateParkingUser(HttpUser):
         ) as response:
             if response.status_code != 200:
                 response.failure(f"login returned HTTP {response.status_code}")
-                raise StopTest("Gate login failed; check test credentials.")
+                raise StopTest("Gate đăng nhập thất bại; hãy kiểm tra thông tin thử nghiệm.")
             try:
                 body = response.json()
                 self.token = body["access_token"]
                 self.token_expiry_seconds = int(body["expires_in"])
             except (KeyError, TypeError, ValueError):
                 response.failure("login response did not contain a valid token")
-                raise StopTest("Gate login returned an invalid response.") from None
+                raise StopTest("Phản hồi đăng nhập của Gate không hợp lệ.") from None
             response.success()
         self.token_created_at = time.monotonic()
 

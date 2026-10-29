@@ -1,4 +1,4 @@
-"""Pydantic schemas for parking entry endpoints."""
+"""Schema Pydantic cho request và response quản lý lượt gửi xe."""
 
 from datetime import datetime
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class ParkEntryRequest(BaseModel):
-    """Body for POST /api/v1/parking/entries."""
+    """Phần thân request POST /api/v1/parking/entries."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -16,7 +16,7 @@ class ParkEntryRequest(BaseModel):
 
 
 class ParkEntryResponse(BaseModel):
-    """Response for GET /api/v1/parking/entries/{ticket}."""
+    """Response của GET /api/v1/parking/entries/{ticket}."""
 
     ticket: str
     plate: str | None
@@ -25,13 +25,13 @@ class ParkEntryResponse(BaseModel):
 
 
 class RetrieveEntryResponse(BaseModel):
-    """Response after a vehicle has been retrieved from the parking lot."""
+    """Response sau khi lấy xe ra khỏi bãi."""
 
     ticket: str
 
 
 class ParkEntryPageResponse(BaseModel):
-    """Paginated list of currently parked vehicles."""
+    """Danh sách xe đang gửi được chia trang."""
 
     items: list[ParkEntryResponse]
     limit: int
@@ -40,6 +40,6 @@ class ParkEntryPageResponse(BaseModel):
 
 
 class ErrorResponse(BaseModel):
-    """Standard error envelope."""
+    """Cấu trúc response lỗi thống nhất."""
 
     error: str

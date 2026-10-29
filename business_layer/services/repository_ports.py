@@ -1,4 +1,4 @@
-"""Persistence contracts and records used by framework-independent services."""
+"""Hợp đồng lưu trữ và bản ghi dùng bởi service không phụ thuộc framework."""
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -25,14 +25,14 @@ class UserCredentials:
 
 
 class VehicleRepositoryPort(Protocol):
-    """Operations required by parking services, without a database dependency."""
+    """Các thao tác service gửi xe cần, không phụ thuộc cơ sở dữ liệu cụ thể."""
 
     def get_by_ticket(self, ticket: str) -> ParkedVehicleRecord | None: ...
 
     def list_page(
         self, limit: int, offset: int
     ) -> tuple[list[ParkedVehicleRecord], int]:
-        """Return one stable page and the total number of parked vehicles."""
+        """Trả một trang kết quả ổn định cùng tổng số xe đang gửi."""
         ...
 
     def find_match(
@@ -40,13 +40,13 @@ class VehicleRepositoryPort(Protocol):
     ) -> ParkedVehicleRecord | None: ...
 
     def add(self, vehicle: ParkedVehicleRecord) -> bool:
-        """Return False only when the ticket already exists."""
+        """Chỉ trả False khi mã vé đã tồn tại."""
         ...
 
     def delete_by_ticket(self, ticket: str) -> bool: ...
 
 
 class UserRepositoryPort(Protocol):
-    """Credential lookup contract required by authentication services."""
+    """Hợp đồng tra cứu thông tin đăng nhập mà service xác thực cần."""
 
     def get_by_username(self, username: str) -> UserCredentials | None: ...

@@ -1,4 +1,4 @@
-"""Domain errors raised by framework-independent business services."""
+"""Lỗi nghiệp vụ được ném bởi các service không phụ thuộc framework."""
 
 
 class BusinessError(Exception):

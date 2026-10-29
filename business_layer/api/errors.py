@@ -1,4 +1,4 @@
-"""Translate domain and request validation errors into stable API responses."""
+"""Chuyển lỗi nghiệp vụ và lỗi kiểm tra request thành response API ổn định."""
 
 from collections.abc import Mapping, Sequence
 

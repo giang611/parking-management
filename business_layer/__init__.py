@@ -1,1 +1,1 @@
-"""HTTP and business application package for the parking service."""
+"""Các thành phần API và nghiệp vụ của dịch vụ quản lý bãi xe."""

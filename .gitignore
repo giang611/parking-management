@@ -11,7 +11,7 @@ __pycache__/
 htmlcov/
 .vscode/
 
-# Ignore generated benchmark runs, but keep the reviewed baseline in Git.
+# Bỏ qua benchmark mới sinh, nhưng giữ baseline đã nghiệm thu trong Git.
 docs/benchmarks/*/
 !docs/benchmarks/20261028T182659Z-m8jDvhHE/
 !docs/benchmarks/20261028T182659Z-m8jDvhHE/**

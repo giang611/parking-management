@@ -1,4 +1,4 @@
-"""Central application settings loaded from environment and the project .env file."""
+"""Tập trung cấu hình ứng dụng từ biến môi trường và tệp .env của dự án."""
 
 from pathlib import Path
 
@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     jwt_expire_seconds: int = Field(default=3600, gt=0)
     admin_username: str = Field(default="gatekeeper", min_length=1, max_length=50)
     admin_password: SecretStr = SecretStr("secret123")
+
     @field_validator("database_url")
     @classmethod
     def database_url_must_not_be_blank(cls, value: str) -> str:

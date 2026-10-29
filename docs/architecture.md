@@ -1,4 +1,4 @@
-# Kiến trúc và mô hình dữ liệu Pha 1
+# Luồng hoạt động, ý nghĩa module và mô hình dữ liệu Pha 1
 
 ## Phạm vi
 
@@ -8,17 +8,40 @@ Hệ thống quản lý lượt xe đang ở trong bãi: đăng nhập nhân vi�
 
 ```mermaid
 flowchart LR
-    Client[Gate client / HTTP client] --> API[FastAPI API<br/>business_layer/api]
-    API --> Services[Business services<br/>business_layer/services]
-    Services --> Ports[Repository ports<br/>business_layer/services/repository_ports.py]
-    Ports -. implemented by .-> Repos[SQLAlchemy repositories<br/>database_persistent/repositories]
-    Repos --> Models[ORM models<br/>database_persistent/models]
-    Models --> SQLite[(SQLite file)]
-    API --> Config[Settings / JWT auth]
+    Client[Client cổng / HTTP] --> API[FastAPI API<br/>business_layer/api]
+    API --> Services[Service nghiệp vụ<br/>business_layer/services]
+    Services --> Ports[Giao diện repository<br/>business_layer/services/repository_ports.py]
+    Ports -. triển khai bởi .-> Repos[Repository SQLAlchemy<br/>database_persistent/repositories]
+    Repos --> Models[Model ORM<br/>database_persistent/models]
+    Models --> SQLite[(Tệp SQLite)]
+    API --> Config[Cấu hình / xác thực JWT]
     Config --> SQLite
 ```
 
 API nhận HTTP, xác thực Bearer token và chuyển dữ liệu sang service. Service thực thi quy tắc nghiệp vụ thuần Python, chỉ biết các repository ports. Repository adapters ánh xạ port sang SQLAlchemy model/session. FastAPI dependencies trong `business_layer/dependencies.py` tạo session, repository và service cho mỗi request. Lỗi miền được ánh xạ thành HTTP/JSON ở `business_layer/main.py` và `business_layer/api/errors.py`.
+
+## Ý nghĩa từng module
+
+| Đường dẫn | Vai trò |
+|---|---|
+| `business_layer/main.py` | Tạo ứng dụng `business_layer.main:app`, khởi tạo DB khi chạy, đăng ký router và quy tắc chuyển ngoại lệ thành HTTP response. |
+| `business_layer/config.py` | Đọc và kiểm tra cấu hình SQLite, JWT và tài khoản quản trị từ environment hoặc `.env`. |
+| `business_layer/security.py` | Xác minh Bearer JWT và trả tên người dùng; router dùng dependency này để bảo vệ endpoint. |
+| `business_layer/api/` | Nhận request, gọi service và tạo response: `auth_router.py` đăng nhập, `parking_router.py` gửi/tra cứu/lấy xe, `health_router.py` kiểm tra trạng thái, `errors.py` chuẩn hóa lỗi. |
+| `business_layer/schemas/` | Khai báo kiểu dữ liệu, trường bắt buộc và response cho API bằng Pydantic. |
+| `business_layer/dependencies.py` | Quản lý transaction/session và khởi tạo repository/service để FastAPI tiêm vào endpoint. |
+| `business_layer/services/` | Thực thi quy tắc nghiệp vụ gửi xe, lấy xe, xác thực và các hợp đồng repository; không phụ thuộc FastAPI hoặc SQLAlchemy. |
+| `database_persistent/db_config.py` | Tạo SQLAlchemy engine/session, lớp ORM nền và chuyển đổi timestamp UTC. |
+| `database_persistent/models/` | Khai báo bảng `users` và `parked_vehicles`, kiểu cột, khóa và ràng buộc dữ liệu. |
+| `database_persistent/repositories/` | Triển khai các repository ports bằng truy vấn SQLAlchemy trên phiên DB. |
+| `database_persistent/seed.py` | Tạo schema và thêm tài khoản quản trị ban đầu bằng mật khẩu bcrypt nếu tài khoản chưa tồn tại. |
+| `gate_client/gate_simulation.py` | Client dòng lệnh tương tác để đăng nhập, gửi xe, tra cứu và lấy xe qua HTTP. |
+| `loadtest/locustfile.py` | Mô phỏng người dùng gửi, tra cứu rồi lấy xe trong vòng lặp tải. |
+| `loadtest/kaggle_runner.sh` | Kiểm tra Backend, chạy Locust và lưu cấu hình cùng báo cáo benchmark. |
+| `tests/` | Kiểm tra hợp đồng API, quy tắc nghiệp vụ, repository, xác thực và công cụ benchmark. |
+| `docs/` | Lưu đặc tả gốc, quyết định, tài liệu luồng/module và baseline benchmark. |
+
+Các thư mục `schemas/` và `loadtest/` chứa file thực thi nên không cần `.gitkeep`. Gate client chạy trực tiếp bằng Python; repo không đóng gói nó thành container riêng.
 
 ```mermaid
 erDiagram
@@ -47,12 +70,16 @@ Khi ASGI app `business_layer.main:app` chạy lifespan, `initialize_database()` 
 
 ## Luồng request
 
-1. `POST /api/v1/auth/login` kiểm tra bcrypt hash và cấp JWT có `sub`, `iat`, `exp`.
-2. Parking router yêu cầu `Authorization: Bearer <token>` qua dependency dùng chung.
-3. API xác thực/schema request rồi gọi `ParkingService`.
-4. Service áp dụng quy tắc xe/vé và gọi repository port.
-5. SQLAlchemy repository truy vấn hoặc ghi SQLite trong transaction do dependency session quản lý.
-6. API chuyển kết quả hoặc lỗi miền thành response HTTP theo đặc tả; GET không thay đổi trạng thái, DELETE xóa lượt gửi khớp thông tin.
+1. `POST /api/v1/auth/login` nhận username/password; API gọi `AuthService`, service đọc hash qua `UserRepositoryPort`, repository lấy dữ liệu tài khoản từ SQLite và bcrypt kiểm tra mật khẩu.
+2. Khi hợp lệ, API trả JWT HS256 có `sub`, `iat`, `exp`. Client gửi token ở header `Authorization: Bearer <token>` cho các endpoint bãi xe.
+3. Dependency xác thực kiểm tra chữ ký, hạn dùng và claim `sub` trước khi endpoint nghiệp vụ chạy.
+4. Pydantic schema kiểm tra cấu trúc request. Router chuyển dữ liệu hợp lệ sang `ParkingService`.
+5. Service kiểm tra luật ticket/loại xe/biển số rồi gọi repository port. Repository SQLAlchemy đọc hoặc ghi SQLite trong transaction của request.
+6. API trả response theo đặc tả. GET chỉ đọc dữ liệu; DELETE xóa lượt gửi sau khi xác nhận ticket, loại xe và biển số.
+
+## Vòng đời khi khởi động
+
+Uvicorn nạp `business_layer.main:app` → FastAPI chạy lifespan → `initialize_database()` tạo các bảng còn thiếu và seed admin → ứng dụng sẵn sàng nhận request. `/health` chỉ báo ứng dụng đang chạy; `/docs` hiển thị Swagger được sinh từ các router và schema.
 
 ## Đối chiếu yêu cầu
 

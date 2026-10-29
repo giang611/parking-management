@@ -1,11 +1,11 @@
-"""Health check endpoint."""
+"""Endpoint kiểm tra trạng thái hoạt động của dịch vụ."""
 
 from fastapi import APIRouter
 
 router = APIRouter(tags=["health"])
 
 
-@router.get("/health", summary="Service liveness check")
+@router.get("/health", summary="Kiểm tra dịch vụ đang hoạt động")
 def health() -> dict[str, str]:
-    """Return 200 when the service is running."""
+    """Trả HTTP 200 khi dịch vụ đang chạy."""
     return {"status": "ok"}

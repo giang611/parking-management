@@ -1,4 +1,4 @@
-"""SQLAlchemy engine, base class, and session factory."""
+"""Khai báo engine SQLAlchemy, lớp nền ORM và bộ tạo phiên làm việc."""
 
 from datetime import datetime, timezone
 
@@ -11,11 +11,11 @@ from business_layer.config import settings
 
 
 class Base(DeclarativeBase):
-    """Base class for persistence models."""
+    """Lớp nền chung cho các model lưu trữ."""
 
 
 class UTCDateTime(TypeDecorator[datetime]):
-    """Store UTC timestamps and return timezone-aware UTC values on every dialect."""
+    """Lưu thời điểm theo UTC và luôn trả về giá trị có múi giờ UTC."""
 
     impl = DateTime
     cache_ok = True
@@ -42,7 +42,7 @@ class UTCDateTime(TypeDecorator[datetime]):
 
 
 def create_database_engine(database_url: str | None = None) -> Engine:
-    """Create an engine for the configured database; SQLite supports worker threads."""
+    """Tạo engine cho DB đã cấu hình; SQLite cho phép dùng qua nhiều luồng."""
 
     url = database_url or settings.database_url
     connect_args = {"check_same_thread": False} if url.startswith("sqlite:") else {}
@@ -54,9 +54,9 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 
 
 def create_schema() -> None:
-    """Create missing tables for the baseline deployment."""
+    """Tạo các bảng còn thiếu cho lần triển khai đầu."""
 
-    # Import models here so their tables are registered before create_all.
-    from database_persistent.models import ParkedVehicle, User  # noqa: F401
+    # Nạp model để đăng ký bảng trước khi gọi create_all.
+    from database_persistent.models import ParkedVehicle, User  # noqa: F401  # Đăng ký model vào metadata SQLAlchemy.
 
     Base.metadata.create_all(bind=engine)
