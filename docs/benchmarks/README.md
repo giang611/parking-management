@@ -1,14 +1,14 @@
-# Kaggle CPU benchmark results
+# Kết quả benchmark CPU trên Kaggle
 
-Run `bash loadtest/kaggle_runner.sh` from the project root after installing `requirements-loadtest.txt` and starting the API. The runner creates a timestamped directory here with:
+Sau khi cài `requirements-loadtest.txt` và khởi động API, chạy `bash loadtest/kaggle_runner.sh` từ thư mục gốc của dự án. Script sẽ tạo một thư mục có tên theo thời gian chạy, bao gồm:
 
-- `environment.txt`: Kaggle hardware, software versions, API target and load configuration.
-- `locust_stats.csv`, `locust_stats_history.csv`, and `locust_failures.csv`: request count, failure count, throughput and response-time percentiles.
-- `report.html`: Locust summary report.
-- `summary.md`: concise baseline metrics for the aggregate row.
+- `environment.txt`: thông tin phần cứng Kaggle, phiên bản phần mềm, địa chỉ API và cấu hình tải.
+- `locust_stats.csv`, `locust_stats_history.csv` và `locust_failures.csv`: số lượng request, số lỗi, thông lượng và các phân vị thời gian phản hồi.
+- `report.html`: báo cáo tổng hợp của Locust.
+- `summary.md`: các chỉ số tóm tắt của dòng tổng hợp.
 
-The default profile is 10 concurrent users, 2 users spawned per second and a 60-second run. Set `USERS`, `SPAWN_RATE`, `RUN_TIME`, and `BASE_URL` to repeat a different profile, and preserve these values when comparing runs. The API and Locust share a Kaggle CPU if both run on the same notebook instance; report that arrangement with each result.
+Cấu hình mặc định chạy trong 60 giây với 10 người dùng đồng thời và tốc độ khởi tạo 2 người dùng mỗi giây. Để chạy với cấu hình khác, đặt các biến `USERS`, `SPAWN_RATE`, `RUN_TIME` và `BASE_URL`; hãy giữ lại các giá trị này khi so sánh những lần chạy. Nếu API và Locust cùng chạy trên một notebook, cả hai sẽ dùng chung CPU Kaggle; cần ghi rõ cách chạy này trong kết quả.
 
-## Recorded baseline
+## Kết quả cơ sở đã ghi nhận
 
-The first Kaggle CPU baseline is stored in [`20261028T182659Z-m8jDvhHE/`](20261028T182659Z-m8jDvhHE/). It used 10 users, a spawn rate of 2 users/second, and ran for 60 seconds on a 4-CPU Intel Xeon Kaggle runtime. Locust exited with code 0 and recorded zero failures. Its final console table reports 4,918 requests; the last periodic CSV snapshot and `summary.md` report 4,868. Locust refreshes CSV statistics periodically, so the final console total can be newer than that snapshot. The raw log and CSV are both retained in the run directory.
+Kết quả benchmark CPU Kaggle đầu tiên được lưu trong [`20261028T182659Z-m8jDvhHE/`](20261028T182659Z-m8jDvhHE/). Lần chạy này dùng 10 người dùng, tốc độ khởi tạo 2 người dùng mỗi giây và kéo dài 60 giây trên môi trường Kaggle có 4 CPU Intel Xeon. Locust kết thúc với mã 0 và không ghi nhận request lỗi. Bảng cuối trong console ghi nhận 4.918 request; ảnh chụp CSV định kỳ cuối cùng và `summary.md` ghi nhận 4.868. Locust cập nhật thống kê CSV theo chu kỳ, vì vậy tổng cuối trong console có thể mới hơn số liệu trong ảnh chụp đó. Log gốc và các tệp CSV đều được giữ lại trong thư mục của lần chạy.
