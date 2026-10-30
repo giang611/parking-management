@@ -2,7 +2,7 @@
 
 ## Phạm vi
 
-Hệ thống quản lý lượt xe đang ở trong bãi: đăng nhập nhân viên, ghi nhận xe vào, tra cứu lượt gửi, liệt kê lượt gửi theo trang và lấy xe ra. Không có bảng giá, biểu phí, tính tiền hoặc trường `charge`.
+Hệ thống quản lý lượt xe đang ở trong bãi: đăng nhập nhân viên, ghi nhận xe vào, tra cứu lượt gửi, liệt kê lượt gửi theo trang và lấy xe ra. Chưa có bảng giá hay chức năng tính tiền tự động.
 
 ## Thành phần và chiều phụ thuộc
 
@@ -18,7 +18,7 @@ flowchart LR
     Config --> SQLite
 ```
 
-API nhận HTTP, xác thực Bearer token và chuyển dữ liệu sang service. Service thực thi quy tắc nghiệp vụ thuần Python, chỉ biết các repository ports. Repository adapters ánh xạ port sang SQLAlchemy model/session. FastAPI dependencies trong `business_layer/dependencies.py` tạo session, repository và service cho mỗi request. Lỗi miền được ánh xạ thành HTTP/JSON ở `business_layer/main.py` và `business_layer/api/errors.py`.
+API nhận HTTP, xác thực Bearer token và chuyển dữ liệu sang service. Service kiểm tra quy tắc nghiệp vụ bằng Python thuần, chỉ biết các repository ports. Repository adapters ánh xạ port sang SQLAlchemy model/session. FastAPI dependencies trong `business_layer/dependencies.py` tạo session, repository và service cho mỗi request. Lỗi miền được ánh xạ thành HTTP/JSON ở `business_layer/main.py` và `business_layer/api/errors.py`.
 
 ## Ý nghĩa từng module
 
@@ -65,7 +65,7 @@ Hai bảng không có quan hệ khóa ngoại: tài khoản xác thực nhân vi
 
 ## Khởi động và lưu trữ
 
-Khi ASGI app `business_layer.main:app` chạy lifespan, `initialize_database()` tạo các bảng còn thiếu và seed tài khoản quản trị. Mặc định local dùng `sqlite:///./parking.db`; Docker Compose ghi DB vào `sqlite:////data/parking.db` trong named volume `parking_data`. `DATABASE_URL`, `JWT_SECRET`, thời hạn JWT và thông tin admin được đọc từ environment/`.env`; không đưa `.env` hoặc file DB vào Git.
+Khi ASGI app `business_layer.main:app` chạy lifespan, `initialize_database()` tạo các bảng còn thiếu và seed tài khoản quản trị. Mặc định local dùng `sqlite:///./parking.db`; Docker Compose ghi DB vào `sqlite:////data/parking.db` trong named volume `parking_data`. `DATABASE_URL`, `JWT_SECRET`, thời hạn JWT và thông tin admin được đọc từ environment/`.env`; không đưa `.env` hoặc file DB vào Git bằng cách dùng .gitignore.
 
 Ứng dụng không cần dịch vụ Internet, OAuth hoặc dịch vụ DB ngoài trong lúc vận hành. JWT HS256 được xác minh bằng cấu hình cục bộ. Có thể sử dụng ở LAN/offline sau khi đã cài Python dependencies hoặc build image Docker. Lần cài dependencies/build image ban đầu cần các gói đã có sẵn hoặc truy cập package/image registry.
 
