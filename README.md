@@ -4,16 +4,16 @@ Backend mô phỏng hệ thống quản lý bãi gửi xe. Tài liệu này giú
 
 ## Bài toán
 
-Nhân viên tại cổng cần ghi nhận xe vào bãi, xác định một lượt gửi còn hiệu lực, tra cứu khi khách hỏi và xác nhận đúng xe trước khi cho ra. Hệ thống phải tránh dùng trùng mã vé, bảo vệ thao tác nghiệp vụ bằng đăng nhập và giữ trạng thái gửi xe sau khi Backend khởi động lại.
+Nhân viên tại cổng cần ghi nhận xe vào bãi, tra cứu khi khách muốn lấy xe và xác nhận đúng xe trước khi cho ra. Hệ thống phải tránh dùng trùng mã vé, lấy sai xe, bảo vệ thao tác nghiệp vụ bằng đăng nhập và giữ trạng thái gửi xe sau khi Backend khởi động lại.
 
 Phase 1 chỉ theo dõi **xe đang gửi**. Hệ thống không quản lý giá, tính phí, thanh toán hoặc lịch sử giao dịch sau khi xe đã được lấy ra.
 
 ## Nghiệp vụ chính
 
-1. Nhân viên đăng nhập và nhận JWT.
-2. Khi xe vào, Gate gửi mã vé, loại xe và biển số nếu cần.
+1. Nhân viên đăng nhập với mk và nhận JWT.
+2. Khi xe vào, Gate bắt buộc gửi mã vé và loại xe và gửi biển số nếu có.
 3. Nhân viên có thể liệt kê xe đang gửi hoặc tra cứu một vé. Tra cứu chỉ đọc, không thay đổi dữ liệu.
-4. Khi xe ra, Gate gửi vé cùng thông tin nhận dạng; Backend xác nhận khớp rồi xóa lượt gửi.
+4. Khi xe ra, Gate gửi vé cùng thông tin nhận dạng; Backend xác nhận khớp thì mới cho thanh toán, thanh toán xong rồi xóa lượt gửi.
 
 Quy tắc dữ liệu: loại xe là `car`, `motorbike` hoặc `bicycle`; xe đạp không có biển số, ô tô/xe máy bắt buộc có biển số. Mỗi vé chỉ có một lượt đang hoạt động. Biển số được chuẩn hóa thành chữ hoa; thời gian vào bãi lưu theo UTC.
 
@@ -69,7 +69,3 @@ Thay `JWT_SECRET` và mật khẩu quản trị mẫu trong `.env`, rồi chạy
 ```
 
 Mở `http://127.0.0.1:8000/docs`. Để chạy đủ test: `.\.venv\Scripts\python.exe -m pytest -q`. Cách chạy Docker, Gate client và benchmark Kaggle xem [Developer Guide](docs/developer-guide.md). Baseline benchmark được lưu tại [docs/benchmarks](docs/benchmarks/README.md).
-
-## Gợi ý giới thiệu trong 5–7 phút
-
-Trình bày lần lượt: vấn đề tại cổng → luồng gửi/tra cứu/lấy xe → quy tắc vé/biển số và phần không bao gồm giá → các tầng API/service/repository → demo Swagger hoặc Gate client. Vấn đề kỹ thuật đáng chú ý là chống trùng vé khi có request đồng thời, kiểm tra token trước nghiệp vụ, chuẩn hóa UTC và giữ dữ liệu SQLite qua lần khởi động lại.
